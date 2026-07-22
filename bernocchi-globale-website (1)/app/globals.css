@@ -1,0 +1,214 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-navy: var(--navy);
+  --color-gold: var(--gold);
+  --color-ivory: var(--ivory);
+  --color-slate: var(--slate);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+:root {
+  color-scheme: light;
+
+  /* Brand palette */
+  --navy: #07131f;
+  --gold: #b9964a;
+  --ivory: #f3efe5;
+  --slate: #a9b1b8;
+
+  --radius: 0.25rem;
+
+  /* Semantic tokens (light / ivory institutional surface) */
+  --background: #f3efe5;
+  --foreground: #07131f;
+  --card: #ffffff;
+  --card-foreground: #07131f;
+  --popover: #ffffff;
+  --popover-foreground: #07131f;
+  --primary: #07131f;
+  --primary-foreground: #f3efe5;
+  --secondary: #e8e2d3;
+  --secondary-foreground: #07131f;
+  --muted: #e8e2d3;
+  --muted-foreground: #55606a;
+  --accent: #b9964a;
+  --accent-foreground: #07131f;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #d9d2c2;
+  --input: #d9d2c2;
+  --ring: #b9964a;
+}
+
+/* Dark institutional surface (navy) — used on hero and footer sections via .on-navy */
+.on-navy {
+  color-scheme: dark;
+  --background: #07131f;
+  --foreground: #f3efe5;
+  --card: #0d1e2e;
+  --card-foreground: #f3efe5;
+  --popover: #0d1e2e;
+  --popover-foreground: #f3efe5;
+  --primary: #b9964a;
+  --primary-foreground: #07131f;
+  --secondary: #14283a;
+  --secondary-foreground: #f3efe5;
+  --muted: #14283a;
+  --muted-foreground: #a9b1b8;
+  --accent: #b9964a;
+  --accent-foreground: #07131f;
+  --border: rgba(185, 150, 74, 0.22);
+  --input: rgba(243, 239, 229, 0.18);
+  --ring: #b9964a;
+
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'kern', 'liga';
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-serif;
+    font-feature-settings: 'kern', 'liga', 'dlig';
+  }
+}
+
+@layer utilities {
+  /* Hairline rule used across the editorial layout */
+  .rule {
+    @apply border-t border-border;
+  }
+  /* Refined eyebrow / small-caps label */
+  .eyebrow {
+    @apply text-xs font-sans font-medium uppercase tracking-[0.22em] text-muted-foreground;
+  }
+  .text-gold {
+    color: var(--gold);
+  }
+}
+
+/* ============================================================
+   CASA BERNOCCHI — MOTION SYSTEM
+   Cinematic, editorial, controlled. All motion is opt-in via
+   prefers-reduced-motion so reduced-motion users see fully
+   visible, static content (no hidden elements, no layout shift).
+   ============================================================ */
+
+/* Legacy subtle reveal, retained for compatibility */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    animation: reveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* --- Hero entrance: staggered rise + fade (delay via --delay) --- */
+  .hero-item {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: hero-rise 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--delay, 0s);
+    will-change: opacity, transform;
+  }
+  @keyframes hero-rise {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* --- Hero eyebrow: letter-spacing reveal --- */
+  .hero-eyebrow {
+    opacity: 0;
+    letter-spacing: 0.5em;
+    animation: hero-eyebrow 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--delay, 0s);
+    will-change: opacity, letter-spacing;
+  }
+  @keyframes hero-eyebrow {
+    to {
+      opacity: 1;
+      letter-spacing: 0.22em;
+    }
+  }
+
+  /* --- Scroll reveal: gentle upward fade (toggled by .is-visible) --- */
+  .reveal-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0s);
+    will-change: opacity, transform;
+  }
+  .reveal-up.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* --- Divider lines expand horizontally --- */
+  .reveal-line {
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0s);
+    will-change: transform;
+  }
+  .reveal-line.is-visible {
+    transform: scaleX(1);
+  }
+
+  /* --- Very subtle parallax on editorial imagery --- */
+  .parallax-soft {
+    transition: transform 0.2s linear;
+    will-change: transform;
+  }
+}
