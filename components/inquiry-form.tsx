@@ -100,6 +100,26 @@ export function InquiryForm({
       noValidate
       className={cn('space-y-5', className)}
     >
+      {/* Honeypot fields — hidden from humans, dropped server-side if filled. */}
+      <div aria-hidden="true" className="hidden">
+        <label htmlFor="company">Company</label>
+        <input
+          id="company"
+          name="company"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+        <label htmlFor="website">Website</label>
+        <input
+          id="website"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="fullName" className={labelClass}>

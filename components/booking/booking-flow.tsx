@@ -55,6 +55,8 @@ export function BookingFlow({
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Honeypot — must stay empty; a filled value indicates a bot.
+  const [company, setCompany] = useState('')
   const [booking, setBooking] = useState<Booking>({
     consultationId: initialConsultationId ?? consultationTypes[0].id,
     mode: 'online',
@@ -120,6 +122,7 @@ export function BookingFlow({
           language: languageLabel,
           date: booking.date,
           time: booking.time,
+          company,
         }),
       })
       if (!res.ok) {
@@ -136,6 +139,20 @@ export function BookingFlow({
 
   return (
     <div className="overflow-hidden rounded-sm border border-border bg-card">
+      {/* Honeypot — hidden from humans, dropped server-side if filled. */}
+      <div aria-hidden="true" className="hidden">
+        <label htmlFor="company">Company</label>
+        <input
+          id="company"
+          name="company"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+        />
+      </div>
+
       {/* Progress */}
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-border bg-secondary px-6 py-4 text-xs">
         {STEPS.map((label, i) => (
