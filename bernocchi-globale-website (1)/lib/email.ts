@@ -1,16 +1,21 @@
 import { site } from '@/lib/content'
 
 /**
- * Server-side email service for Casa Bernocchi.
+ * CASA BERNOCCHI — EMAIL DELIVERY
+ * --------------------------------
+ * Transactional emails delivered through Resend.
  *
- * Required environment variables:
- * - RESEND_API_KEY
- * - CONTACT_RECIPIENT_EMAIL
- * - CONTACT_FROM_EMAIL
+ * Required environment variable:
+ *   RESEND_API_KEY
+ *
+ * Optional environment variables:
+ *   CONTACT_RECIPIENT_EMAIL
+ *   CONTACT_FROM_EMAIL
  */
 
 export const SEGRETERIA_RECIPIENT =
-  process.env.CONTACT_RECIPIENT_EMAIL ?? 'segreteria@bernocchiglobale.it'
+  process.env.CONTACT_RECIPIENT_EMAIL ??
+  'segreteria@bernocchiglobale.it'
 
 const FROM_ADDRESS =
   process.env.CONTACT_FROM_EMAIL ??
@@ -20,180 +25,13 @@ type SendArgs = {
   to: string | string[]
   subject: string
   text: string
-  html?: string
   replyTo?: string
 }
 
-export type SendResult =
+type SendResult =
   | { status: 'sent' }
   | { status: 'skipped' }
   | { status: 'error'; detail: string }
-
-export type AppointmentConfirmationData = {
-  fullName: string
-  consultation: string
-  mode: string
-  date: string
-  time: string
-  language: string
-}
-
-type AppointmentLanguage = 'es' | 'it' | 'en'
-
-type AppointmentCopy = {
-  htmlLang: AppointmentLanguage
-  locale: string
-  subject: string
-  title: string
-  preheader: string
-  greeting: (name: string) => string
-  opening: string
-  followUp: string
-  summaryTitle: string
-  consultationLabel: string
-  modeLabel: string
-  dateLabel: string
-  timeLabel: string
-  languageLabel: string
-  button: string
-  notice: string
-  regards: string
-  confidentiality: string
-  generated: string
-  unspecified: string
-}
-
-const APPOINTMENT_COPY: Record<AppointmentLanguage, AppointmentCopy> = {
-  es: {
-    htmlLang: 'es',
-    locale: 'es-ES',
-    subject: 'Hemos recibido su solicitud de cita — Bernocchi Health',
-    title: 'Hemos recibido su solicitud',
-    preheader:
-      'La Segreteria Generale ha recibido su solicitud de cita.',
-    greeting: (name) => `Estimado/a ${name},`,
-    opening:
-      'Gracias por contactar con Bernocchi Health. Su solicitud de cita ha sido recibida y puesta a disposición de nuestra Segreteria Generale.',
-    followUp:
-      'Nuestro equipo revisará la fecha solicitada y se pondrá en contacto con usted personalmente para confirmar la disponibilidad y los siguientes pasos.',
-    summaryTitle: 'Resumen de la solicitud',
-    consultationLabel: 'Consulta',
-    modeLabel: 'Modalidad',
-    dateLabel: 'Fecha preferida',
-    timeLabel: 'Hora preferida',
-    languageLabel: 'Idioma preferido',
-    button: 'Visitar Bernocchi Health',
-    notice:
-      'Esta comunicación confirma la recepción de su solicitud. Todavía no constituye una cita confirmada y no se ha realizado ningún cobro.',
-    regards: 'Atentamente,',
-    confidentiality: 'Comunicación institucional confidencial.',
-    generated:
-      'Este mensaje se generó porque se envió una solicitud de cita en',
-    unspecified: 'No especificado',
-  },
-  it: {
-    htmlLang: 'it',
-    locale: 'it-IT',
-    subject:
-      'Abbiamo ricevuto la Sua richiesta di appuntamento — Bernocchi Health',
-    title: 'Abbiamo ricevuto la Sua richiesta',
-    preheader:
-      'La Segreteria Generale ha ricevuto la Sua richiesta di appuntamento.',
-    greeting: (name) => `Gentile ${name},`,
-    opening:
-      'La ringraziamo per aver contattato Bernocchi Health. La Sua richiesta di appuntamento è stata ricevuta e sottoposta all’attenzione della nostra Segreteria Generale.',
-    followUp:
-      'Il nostro ufficio esaminerà la data richiesta e La contatterà personalmente per confermare la disponibilità e i passaggi successivi.',
-    summaryTitle: 'Riepilogo della richiesta',
-    consultationLabel: 'Consulto',
-    modeLabel: 'Modalità',
-    dateLabel: 'Data preferita',
-    timeLabel: 'Orario preferito',
-    languageLabel: 'Lingua preferita',
-    button: 'Visita Bernocchi Health',
-    notice:
-      'Questa comunicazione conferma la ricezione della Sua richiesta. Non costituisce ancora un appuntamento confermato e non è stato effettuato alcun pagamento.',
-    regards: 'Con i nostri più cordiali saluti,',
-    confidentiality: 'Comunicazione istituzionale riservata.',
-    generated:
-      'Questo messaggio è stato generato perché è stata inviata una richiesta di appuntamento su',
-    unspecified: 'Non specificato',
-  },
-  en: {
-    htmlLang: 'en',
-    locale: 'en-GB',
-    subject:
-      'Your appointment request has been received — Bernocchi Health',
-    title: 'Your appointment request has been received',
-    preheader:
-      'Your appointment request has been received by the Segreteria Generale.',
-    greeting: (name) => `Dear ${name},`,
-    opening:
-      'Thank you for contacting Bernocchi Health. Your appointment request has been received and placed under the attention of our Segreteria Generale.',
-    followUp:
-      'A member of our office will review the requested date and contact you personally to confirm availability and the next steps.',
-    summaryTitle: 'Request summary',
-    consultationLabel: 'Consultation',
-    modeLabel: 'Modality',
-    dateLabel: 'Preferred date',
-    timeLabel: 'Preferred time',
-    languageLabel: 'Preferred language',
-    button: 'Visit Bernocchi Health',
-    notice:
-      'This communication confirms receipt of your request. It does not yet constitute a confirmed appointment, and no payment has been taken.',
-    regards: 'With our regards,',
-    confidentiality: 'Confidential institutional communication.',
-    generated:
-      'This message was generated because an appointment request was submitted at',
-    unspecified: 'Not specified',
-  },
-}
-
-const CONSULTATION_TRANSLATIONS: Record<
-  AppointmentLanguage,
-  Record<string, string>
-> = {
-  es: {
-    'clinical sexology': 'Sexología clínica',
-    'couples therapy': 'Terapia de pareja',
-    "men's sexual health": 'Salud sexual masculina',
-    "women's sexual health": 'Salud sexual femenina',
-    'online consultation': 'Consulta en línea',
-    'executive consultation': 'Consulta ejecutiva',
-  },
-  it: {
-    'clinical sexology': 'Sessuologia clinica',
-    'couples therapy': 'Terapia di coppia',
-    "men's sexual health": 'Salute sessuale maschile',
-    "women's sexual health": 'Salute sessuale femminile',
-    'online consultation': 'Consulto online',
-    'executive consultation': 'Consulenza executive',
-  },
-  en: {},
-}
-
-const MODE_TRANSLATIONS: Record<
-  AppointmentLanguage,
-  Record<string, string>
-> = {
-  es: {
-    online: 'En línea',
-    'in person': 'Presencial',
-    'in-person': 'Presencial',
-    presencial: 'Presencial',
-  },
-  it: {
-    online: 'Online',
-    'in person': 'In presenza',
-    'in-person': 'In presenza',
-    presencial: 'In presenza',
-  },
-  en: {
-    presencial: 'In person',
-    'en línea': 'Online',
-    'en linea': 'Online',
-  },
-}
 
 function escapeHtml(value: string): string {
   return value
@@ -204,682 +42,545 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#039;')
 }
 
-function normalizeForLookup(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-}
+function renderTextContent(text: string): string {
+  const lines = text.split('\n')
+  const sections: string[] = []
+  let paragraphLines: string[] = []
+  let detailRows: string[] = []
 
-function resolveAppointmentLanguage(value: string): AppointmentLanguage {
-  const normalized = normalizeForLookup(value)
+  function flushParagraph() {
+    if (paragraphLines.length === 0) return
 
-  if (
-    normalized === 'es' ||
-    normalized.includes('espanol') ||
-    normalized.includes('spanish')
-  ) {
-    return 'es'
+    sections.push(`
+      <p class="body-copy" style="
+        margin:0 0 18px;
+        color:#28303d;
+        font-family:Georgia, 'Times New Roman', serif;
+        font-size:16px;
+        line-height:1.75;
+      ">
+        ${paragraphLines.map(escapeHtml).join('<br>')}
+      </p>
+    `)
+
+    paragraphLines = []
   }
 
-  if (
-    normalized === 'it' ||
-    normalized.includes('italiano') ||
-    normalized.includes('italian')
-  ) {
-    return 'it'
+  function flushDetails() {
+    if (detailRows.length === 0) return
+
+    sections.push(`
+      <table
+        role="presentation"
+        width="100%"
+        cellspacing="0"
+        cellpadding="0"
+        border="0"
+        class="detail-table"
+        style="
+          width:100%;
+          margin:8px 0 24px;
+          border-collapse:separate;
+          border-spacing:0;
+          overflow:hidden;
+          border:1px solid #ded5c3;
+          border-radius:4px;
+          background:#faf7f0;
+        "
+      >
+        ${detailRows.join('')}
+      </table>
+    `)
+
+    detailRows = []
   }
 
-  return 'en'
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+
+    if (!line) {
+      flushParagraph()
+      flushDetails()
+      continue
+    }
+
+    const separatorIndex = line.indexOf(':')
+
+    if (
+      separatorIndex > 0 &&
+      separatorIndex < 42 &&
+      !line.startsWith('http')
+    ) {
+      flushParagraph()
+
+      const label = escapeHtml(line.slice(0, separatorIndex).trim())
+      const value = escapeHtml(line.slice(separatorIndex + 1).trim())
+
+      detailRows.push(`
+        <tr>
+          <td
+            class="detail-label"
+            style="
+              width:38%;
+              padding:13px 15px;
+              border-bottom:1px solid #e7dfd1;
+              color:#74613e;
+              font-family:Arial, Helvetica, sans-serif;
+              font-size:11px;
+              font-weight:700;
+              line-height:1.4;
+              letter-spacing:1.3px;
+              text-transform:uppercase;
+              vertical-align:top;
+            "
+          >
+            ${label}
+          </td>
+          <td
+            class="detail-value"
+            style="
+              padding:13px 15px;
+              border-bottom:1px solid #e7dfd1;
+              color:#182131;
+              font-family:Arial, Helvetica, sans-serif;
+              font-size:14px;
+              line-height:1.55;
+              vertical-align:top;
+            "
+          >
+            ${value || '—'}
+          </td>
+        </tr>
+      `)
+    } else {
+      flushDetails()
+      paragraphLines.push(line)
+    }
+  }
+
+  flushParagraph()
+  flushDetails()
+
+  return sections.join('')
 }
 
-function localizeConsultation(
-  consultation: string,
-  language: AppointmentLanguage,
-): string {
-  const normalized = normalizeForLookup(consultation)
-  return CONSULTATION_TRANSLATIONS[language][normalized] ?? consultation
-}
-
-function localizeMode(
-  mode: string,
-  language: AppointmentLanguage,
-): string {
-  const normalized = normalizeForLookup(mode)
-  return MODE_TRANSLATIONS[language][normalized] ?? mode
-}
-
-function localizeLanguageName(
-  language: AppointmentLanguage,
-): string {
-  if (language === 'es') return 'Español'
-  if (language === 'it') return 'Italiano'
-  return 'English'
-}
-
-function formatAppointmentDate(
-  date: string,
-  copy: AppointmentCopy,
-): string {
-  const isoDate = /^\d{4}-\d{2}-\d{2}$/.test(date)
-
-  if (!isoDate) return date
-
-  const parsedDate = new Date(`${date}T12:00:00`)
-
-  if (Number.isNaN(parsedDate.getTime())) return date
-
-  return new Intl.DateTimeFormat(copy.locale, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(parsedDate)
-}
-
-export function getAppointmentConfirmationSubject(
-  language: string,
-): string {
-  const languageCode = resolveAppointmentLanguage(language)
-  return APPOINTMENT_COPY[languageCode].subject
-}
-
-export function buildAppointmentConfirmationText({
-  fullName,
-  consultation,
-  mode,
-  date,
-  time,
-  language,
-}: AppointmentConfirmationData): string {
-  const languageCode = resolveAppointmentLanguage(language)
-  const copy = APPOINTMENT_COPY[languageCode]
-  const localizedConsultation = localizeConsultation(
-    consultation,
-    languageCode,
-  )
-  const localizedMode = localizeMode(mode, languageCode)
-  const localizedDate = formatAppointmentDate(date, copy)
-  const localizedLanguage = localizeLanguageName(languageCode)
-
-  return [
-    copy.greeting(fullName),
-    '',
-    copy.opening,
-    '',
-    copy.followUp,
-    '',
-    `${copy.consultationLabel}: ${localizedConsultation}`,
-    `${copy.modeLabel}: ${localizedMode}`,
-    `${copy.dateLabel}: ${localizedDate}`,
-    `${copy.timeLabel}: ${time}`,
-    `${copy.languageLabel}: ${localizedLanguage}`,
-    '',
-    copy.notice,
-    '',
-    copy.regards,
-    'Segreteria Generale',
-    'Casa Bernocchi',
-    site.legalName,
-    site.domain,
-  ].join('\n')
-}
-
-/**
- * Premium appointment-confirmation email.
- *
- * It deliberately excludes clinical or sensitive information and contains
- * only the logistical details provided during the booking request.
- */
-export function buildAppointmentConfirmationEmail({
-  fullName,
-  consultation,
-  mode,
-  date,
-  time,
-  language,
-}: AppointmentConfirmationData): string {
-  const languageCode = resolveAppointmentLanguage(language)
-  const copy = APPOINTMENT_COPY[languageCode]
-
-  const localizedConsultation = localizeConsultation(
-    consultation,
-    languageCode,
-  )
-  const localizedMode = localizeMode(mode, languageCode)
-  const localizedDate = formatAppointmentDate(date, copy)
-  const localizedLanguage = localizeLanguageName(languageCode)
-
-  const safeConsultation = escapeHtml(localizedConsultation)
-  const safeMode = escapeHtml(localizedMode)
-  const safeDate = escapeHtml(localizedDate)
-  const safeTime = escapeHtml(time)
-  const safeLanguage = escapeHtml(
-    localizedLanguage || copy.unspecified,
-  )
-
-  const websiteUrl = site.url.replace(/\/$/, '')
-  const healthUrl = `${websiteUrl}/health`
-  const logoUrl = `${websiteUrl}/images/casa-bernocchi-logo.jpeg`
-  const year = new Date().getFullYear()
+function renderCasaBernocchiEmail({
+  subject,
+  text,
+}: {
+  subject: string
+  text: string
+}): string {
+  const safeSubject = escapeHtml(subject)
+  const content = renderTextContent(text)
 
   return `<!doctype html>
-<html lang="${copy.htmlLang}">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light">
-    <meta name="supported-color-schemes" content="light">
-    <title>${escapeHtml(copy.subject)}</title>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+  <meta name="color-scheme" content="light dark">
+  <meta
+    name="supported-color-schemes"
+    content="light dark"
+  >
 
-    <style>
-      @media only screen and (max-width: 640px) {
-        .email-container {
-          width: 100% !important;
-        }
+  <title>${safeSubject}</title>
 
-        .email-padding {
-          padding-left: 24px !important;
-          padding-right: 24px !important;
-        }
+  <style>
+    :root {
+      color-scheme: light dark;
+      supported-color-schemes: light dark;
+    }
 
-        .institutional-image {
-          width: 100% !important;
-          height: auto !important;
-        }
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background-color: #eee9df;
+    }
 
-        .details-label,
-        .details-value {
-          display: block !important;
-          width: 100% !important;
-          text-align: left !important;
-        }
+    table {
+      border-spacing: 0;
+    }
 
-        .details-value {
-          padding-top: 4px !important;
-        }
+    img {
+      border: 0;
+      display: block;
+    }
+
+    @media only screen and (max-width: 620px) {
+      .email-shell {
+        width: 100% !important;
       }
-    </style>
-  </head>
 
-  <body
+      .email-padding {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+      }
+
+      .brand-title {
+        font-size: 25px !important;
+      }
+
+      .email-heading {
+        font-size: 26px !important;
+      }
+
+      .detail-label,
+      .detail-value {
+        display: block !important;
+        width: auto !important;
+        box-sizing: border-box !important;
+      }
+
+      .detail-label {
+        padding-bottom: 4px !important;
+        border-bottom: 0 !important;
+      }
+
+      .detail-value {
+        padding-top: 2px !important;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body,
+      .email-background {
+        background-color: #070b12 !important;
+      }
+
+      .email-card {
+        background-color: #101722 !important;
+        border-color: #293241 !important;
+      }
+
+      .content-area {
+        background-color: #101722 !important;
+      }
+
+      .email-heading,
+      .body-copy,
+      .detail-value {
+        color: #f3eee4 !important;
+      }
+
+      .muted-copy {
+        color: #b7af9f !important;
+      }
+
+      .detail-table {
+        background-color: #151d29 !important;
+        border-color: #374152 !important;
+      }
+
+      .detail-label {
+        color: #d0ad69 !important;
+        border-color: #374152 !important;
+      }
+
+      .detail-value {
+        border-color: #374152 !important;
+      }
+
+      .signature-box {
+        background-color: #151d29 !important;
+        border-color: #3c4656 !important;
+      }
+
+      .signature-name {
+        color: #f3eee4 !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div
     style="
-      margin: 0;
-      padding: 0;
-      background-color: #f2efe8;
-      font-family: Arial, Helvetica, sans-serif;
-      color: #18202b;
+      display:none;
+      max-height:0;
+      overflow:hidden;
+      opacity:0;
+      color:transparent;
     "
   >
-    <div
-      style="
-        display: none;
-        max-height: 0;
-        overflow: hidden;
-        opacity: 0;
-        color: transparent;
-      "
-    >
-      ${escapeHtml(copy.preheader)}
-    </div>
+    ${safeSubject} — Casa Bernocchi
+  </div>
 
-    <table
-      role="presentation"
-      width="100%"
-      cellspacing="0"
-      cellpadding="0"
-      border="0"
-      style="background-color: #f2efe8;"
-    >
-      <tr>
-        <td align="center" style="padding: 38px 14px;">
-          <table
-            role="presentation"
-            width="640"
-            cellspacing="0"
-            cellpadding="0"
-            border="0"
-            class="email-container"
-            style="
-              width: 640px;
-              max-width: 640px;
-              background-color: #ffffff;
-              border: 1px solid #ded8ca;
-              border-radius: 4px;
-              overflow: hidden;
-              box-shadow: 0 8px 30px rgba(15, 25, 38, 0.08);
-            "
-          >
-            <tr>
-              <td
-                align="center"
-                class="email-padding"
+  <table
+    role="presentation"
+    width="100%"
+    cellspacing="0"
+    cellpadding="0"
+    border="0"
+    class="email-background"
+    style="
+      width:100%;
+      background:#eee9df;
+    "
+  >
+    <tr>
+      <td
+        align="center"
+        style="padding:36px 12px;"
+      >
+        <table
+          role="presentation"
+          width="600"
+          cellspacing="0"
+          cellpadding="0"
+          border="0"
+          class="email-shell email-card"
+          style="
+            width:600px;
+            max-width:600px;
+            background:#ffffff;
+            border:1px solid #d9d0bf;
+            border-radius:6px;
+            overflow:hidden;
+            box-shadow:0 14px 38px rgba(10,18,30,0.12);
+          "
+        >
+          <!-- Institutional header -->
+          <tr>
+            <td
+              align="center"
+              class="email-padding"
+              style="
+                padding:40px 48px 34px;
+                background:#091321;
+                border-bottom:3px solid #b99551;
+              "
+            >
+              <table
+                role="presentation"
+                cellspacing="0"
+                cellpadding="0"
+                border="0"
+              >
+                <tr>
+                  <td align="center">
+                    <div
+                      style="
+                        width:64px;
+                        height:64px;
+                        line-height:64px;
+                        border:1px solid #c5a35f;
+                        border-radius:50%;
+                        color:#d3b573;
+                        font-family:Georgia, 'Times New Roman', serif;
+                        font-size:22px;
+                        letter-spacing:2px;
+                        text-align:center;
+                      "
+                    >
+                      CB
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <div
+                class="brand-title"
                 style="
-                  padding: 24px 40px 36px;
-                  background-color: #05090d;
-                  border-bottom: 4px solid #b99752;
+                  margin-top:18px;
+                  color:#f3eee4;
+                  font-family:Georgia, 'Times New Roman', serif;
+                  font-size:29px;
+                  line-height:1.2;
+                  letter-spacing:0.4px;
                 "
               >
-                <img
-                  src="${logoUrl}"
-                  width="536"
-                  alt="Casa Bernocchi — Domus Fvndatrix"
-                  class="institutional-image"
-                  style="
-                    display: block;
-                    width: 100%;
-                    max-width: 536px;
-                    height: auto;
-                    margin: 0 auto 26px;
-                    border: 0;
-                    outline: none;
-                    text-decoration: none;
-                  "
-                >
+                Casa Bernocchi
+              </div>
 
-                <div
-                  style="
-                    color: #d4b66f;
-                    font-size: 11px;
-                    letter-spacing: 3px;
-                    text-transform: uppercase;
-                    margin-bottom: 10px;
-                  "
-                >
-                  Segreteria Generale
-                </div>
-
-                <h1
-                  style="
-                    margin: 0;
-                    color: #ffffff;
-                    font-family: Georgia, 'Times New Roman', serif;
-                    font-size: 31px;
-                    line-height: 1.25;
-                    font-weight: normal;
-                  "
-                >
-                  ${escapeHtml(copy.title)}
-                </h1>
-
-                <p
-                  style="
-                    margin: 12px 0 0;
-                    color: #b9c1c9;
-                    font-size: 14px;
-                    line-height: 1.7;
-                  "
-                >
-                  Bernocchi Health · Casa Bernocchi
-                </p>
-              </td>
-            </tr>
-
-            <tr>
-              <td
-                class="email-padding"
-                style="padding: 44px 52px 18px;"
-              >
-                <p
-                  style="
-                    margin: 0 0 22px;
-                    color: #18202b;
-                    font-family: Georgia, 'Times New Roman', serif;
-                    font-size: 22px;
-                    line-height: 1.5;
-                  "
-                >
-                  ${escapeHtml(copy.greeting(fullName))}
-                </p>
-
-                <p
-                  style="
-                    margin: 0;
-                    color: #4f5862;
-                    font-size: 15px;
-                    line-height: 1.8;
-                  "
-                >
-                  ${escapeHtml(copy.opening)}
-                </p>
-
-                <p
-                  style="
-                    margin: 18px 0 0;
-                    color: #4f5862;
-                    font-size: 15px;
-                    line-height: 1.8;
-                  "
-                >
-                  ${escapeHtml(copy.followUp)}
-                </p>
-              </td>
-            </tr>
-
-            <tr>
-              <td
-                class="email-padding"
-                style="padding: 22px 52px 12px;"
-              >
-                <div
-                  style="
-                    padding: 11px 0;
-                    border-top: 1px solid #b99752;
-                    border-bottom: 1px solid #b99752;
-                    color: #8b6e35;
-                    font-size: 11px;
-                    font-weight: bold;
-                    letter-spacing: 2px;
-                    text-transform: uppercase;
-                  "
-                >
-                  ${escapeHtml(copy.summaryTitle)}
-                </div>
-              </td>
-            </tr>
-
-            <tr>
-              <td
-                class="email-padding"
-                style="padding: 10px 52px 28px;"
-              >
-                <table
-                  role="presentation"
-                  width="100%"
-                  cellspacing="0"
-                  cellpadding="0"
-                  border="0"
-                  style="
-                    border: 1px solid #e2ded5;
-                    background-color: #faf9f6;
-                  "
-                >
-                  <tr>
-                    <td
-                      class="details-label"
-                      width="38%"
-                      style="
-                        padding: 16px 18px;
-                        border-bottom: 1px solid #e2ded5;
-                        color: #747b82;
-                        font-size: 12px;
-                        letter-spacing: 1px;
-                        text-transform: uppercase;
-                      "
-                    >
-                      ${escapeHtml(copy.consultationLabel)}
-                    </td>
-
-                    <td
-                      class="details-value"
-                      style="
-                        padding: 16px 18px;
-                        border-bottom: 1px solid #e2ded5;
-                        color: #18202b;
-                        font-size: 14px;
-                        font-weight: bold;
-                      "
-                    >
-                      ${safeConsultation}
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td
-                      class="details-label"
-                      style="
-                        padding: 16px 18px;
-                        border-bottom: 1px solid #e2ded5;
-                        color: #747b82;
-                        font-size: 12px;
-                        letter-spacing: 1px;
-                        text-transform: uppercase;
-                      "
-                    >
-                      ${escapeHtml(copy.modeLabel)}
-                    </td>
-
-                    <td
-                      class="details-value"
-                      style="
-                        padding: 16px 18px;
-                        border-bottom: 1px solid #e2ded5;
-                        color: #18202b;
-                        font-size: 14px;
-                        font-weight: bold;
-                      "
-                    >
-                      ${safeMode}
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td
-                      class="details-label"
-                      style="
-                        padding: 16px 18px;
-                        border-bottom: 1px solid #e2ded5;
-                        color: #747b82;
-                        font-size: 12px;
-                        letter-spacing: 1px;
-                        text-transform: uppercase;
-                      "
-                    >
-                      ${escapeHtml(copy.dateLabel)}
-                    </td>
-
-                    <td
-                      class="details-value"
-                      style="
-                        padding: 16px 18px;
-                        border-bottom: 1px solid #e2ded5;
-                        color: #18202b;
-                        font-size: 14px;
-                        font-weight: bold;
-                      "
-                    >
-                      ${safeDate}
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td
-                      class="details-label"
-                      style="
-                        padding: 16px 18px;
-                        border-bottom: 1px solid #e2ded5;
-                        color: #747b82;
-                        font-size: 12px;
-                        letter-spacing: 1px;
-                        text-transform: uppercase;
-                      "
-                    >
-                      ${escapeHtml(copy.timeLabel)}
-                    </td>
-
-                    <td
-                      class="details-value"
-                      style="
-                        padding: 16px 18px;
-                        border-bottom: 1px solid #e2ded5;
-                        color: #18202b;
-                        font-size: 14px;
-                        font-weight: bold;
-                      "
-                    >
-                      ${safeTime}
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td
-                      class="details-label"
-                      style="
-                        padding: 16px 18px;
-                        color: #747b82;
-                        font-size: 12px;
-                        letter-spacing: 1px;
-                        text-transform: uppercase;
-                      "
-                    >
-                      ${escapeHtml(copy.languageLabel)}
-                    </td>
-
-                    <td
-                      class="details-value"
-                      style="
-                        padding: 16px 18px;
-                        color: #18202b;
-                        font-size: 14px;
-                        font-weight: bold;
-                      "
-                    >
-                      ${safeLanguage}
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-            <tr>
-              <td
-                align="center"
-                class="email-padding"
-                style="padding: 4px 52px 38px;"
-              >
-                <table
-                  role="presentation"
-                  cellspacing="0"
-                  cellpadding="0"
-                  border="0"
-                >
-                  <tr>
-                    <td
-                      align="center"
-                      style="
-                        background-color: #b99752;
-                        border-radius: 2px;
-                      "
-                    >
-                      <a
-                        href="${healthUrl}"
-                        style="
-                          display: inline-block;
-                          padding: 14px 28px;
-                          color: #081522;
-                          font-size: 12px;
-                          font-weight: bold;
-                          letter-spacing: 1.4px;
-                          text-decoration: none;
-                          text-transform: uppercase;
-                        "
-                      >
-                        ${escapeHtml(copy.button)}
-                      </a>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-            <tr>
-              <td
-                class="email-padding"
+              <div
                 style="
-                  padding: 28px 52px;
-                  background-color: #f7f5f0;
-                  border-top: 1px solid #e2ded5;
+                  margin-top:8px;
+                  color:#c5a35f;
+                  font-family:Arial, Helvetica, sans-serif;
+                  font-size:10px;
+                  font-weight:700;
+                  line-height:1.4;
+                  letter-spacing:3px;
+                  text-transform:uppercase;
                 "
               >
-                <p
-                  style="
-                    margin: 0;
-                    color: #4f5862;
-                    font-size: 13px;
-                    line-height: 1.75;
-                  "
-                >
-                  ${escapeHtml(copy.notice)}
-                </p>
+                Segreteria Generale
+              </div>
 
-                <p
-                  style="
-                    margin: 18px 0 0;
-                    color: #18202b;
-                    font-family: Georgia, 'Times New Roman', serif;
-                    font-size: 16px;
-                    line-height: 1.6;
-                  "
-                >
-                  ${escapeHtml(copy.regards)}<br>
-                  <strong>Segreteria Generale</strong><br>
-                  Casa Bernocchi
-                </p>
-              </td>
-            </tr>
-
-            <tr>
-              <td
-                align="center"
-                class="email-padding"
+              <div
                 style="
-                  padding: 25px 52px;
-                  background-color: #081522;
+                  width:54px;
+                  height:1px;
+                  margin:22px auto 0;
+                  background:#c5a35f;
+                "
+              ></div>
+            </td>
+          </tr>
+
+          <!-- Main content -->
+          <tr>
+            <td
+              class="email-padding content-area"
+              style="
+                padding:42px 48px 38px;
+                background:#fffdf9;
+              "
+            >
+              <div
+                style="
+                  margin-bottom:12px;
+                  color:#a38246;
+                  font-family:Arial, Helvetica, sans-serif;
+                  font-size:10px;
+                  font-weight:700;
+                  line-height:1.4;
+                  letter-spacing:2.2px;
+                  text-transform:uppercase;
                 "
               >
-                <p
-                  style="
-                    margin: 0;
-                    color: #d4b66f;
-                    font-size: 11px;
-                    letter-spacing: 2px;
-                    text-transform: uppercase;
-                  "
-                >
-                  Scientia · Integritas · Posteritas
-                </p>
+                Comunicazione istituzionale
+              </div>
 
-                <p
-                  style="
-                    margin: 12px 0 0;
-                    color: #9ca5ad;
-                    font-size: 11px;
-                    line-height: 1.7;
-                  "
-                >
-                  ${escapeHtml(site.legalName)}<br>
-                  Milano · Costa Rica
-                </p>
+              <h1
+                class="email-heading"
+                style="
+                  margin:0 0 25px;
+                  color:#142034;
+                  font-family:Georgia, 'Times New Roman', serif;
+                  font-size:31px;
+                  font-weight:400;
+                  line-height:1.25;
+                "
+              >
+                ${safeSubject}
+              </h1>
 
-                <p
-                  style="
-                    margin: 12px 0 0;
-                    color: #77818b;
-                    font-size: 10px;
-                    line-height: 1.6;
-                  "
-                >
-                  © ${year} Casa Bernocchi. ${escapeHtml(copy.confidentiality)}
-                </p>
-              </td>
-            </tr>
-          </table>
+              ${content}
 
-          <p
-            style="
-              margin: 18px 0 0;
-              color: #8c8a84;
-              font-size: 10px;
-              line-height: 1.6;
-              text-align: center;
-            "
-          >
-            ${escapeHtml(copy.generated)} ${escapeHtml(site.domain)}.
-          </p>
-        </td>
-      </tr>
-    </table>
-  </body>
+              <table
+                role="presentation"
+                width="100%"
+                cellspacing="0"
+                cellpadding="0"
+                border="0"
+                class="signature-box"
+                style="
+                  width:100%;
+                  margin-top:30px;
+                  background:#f7f2e8;
+                  border:1px solid #ded3bf;
+                  border-left:3px solid #b99551;
+                "
+              >
+                <tr>
+                  <td style="padding:20px 22px;">
+                    <div
+                      class="muted-copy"
+                      style="
+                        color:#6c675f;
+                        font-family:Arial, Helvetica, sans-serif;
+                        font-size:11px;
+                        line-height:1.5;
+                        letter-spacing:1.2px;
+                        text-transform:uppercase;
+                      "
+                    >
+                      Con i nostri riguardi
+                    </div>
+
+                    <div
+                      class="signature-name"
+                      style="
+                        margin-top:7px;
+                        color:#182131;
+                        font-family:Georgia, 'Times New Roman', serif;
+                        font-size:19px;
+                        line-height:1.4;
+                      "
+                    >
+                      Segreteria Generale
+                    </div>
+
+                    <div
+                      class="muted-copy"
+                      style="
+                        margin-top:3px;
+                        color:#777168;
+                        font-family:Arial, Helvetica, sans-serif;
+                        font-size:12px;
+                        line-height:1.5;
+                      "
+                    >
+                      Casa Bernocchi · Bernocchi Globale Holdings
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td
+              align="center"
+              class="email-padding"
+              style="
+                padding:25px 42px;
+                background:#091321;
+              "
+            >
+              <div
+                style="
+                  color:#d3b573;
+                  font-family:Arial, Helvetica, sans-serif;
+                  font-size:10px;
+                  font-weight:700;
+                  line-height:1.6;
+                  letter-spacing:1.6px;
+                  text-transform:uppercase;
+                "
+              >
+                Italian excellence, built to endure.
+              </div>
+
+              <div
+                style="
+                  margin-top:10px;
+                  color:#aeb6c1;
+                  font-family:Arial, Helvetica, sans-serif;
+                  font-size:11px;
+                  line-height:1.7;
+                "
+              >
+                segreteria@bernocchiglobale.it<br>
+                bernocchiglobale.it
+              </div>
+
+              <div
+                style="
+                  margin-top:17px;
+                  color:#707b8a;
+                  font-family:Arial, Helvetica, sans-serif;
+                  font-size:9px;
+                  line-height:1.55;
+                "
+              >
+                This transactional communication was generated following
+                a request submitted through the official Casa Bernocchi website.
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
 </html>`
 }
 
@@ -887,7 +588,6 @@ export async function sendEmail({
   to,
   subject,
   text,
-  html,
   replyTo,
 }: SendArgs): Promise<SendResult> {
   const resendKey = process.env.RESEND_API_KEY
@@ -909,7 +609,10 @@ export async function sendEmail({
         ...(replyTo ? { reply_to: replyTo } : {}),
         subject,
         text,
-        ...(html ? { html } : {}),
+        html: renderCasaBernocchiEmail({
+          subject,
+          text,
+        }),
       }),
     })
 
@@ -926,7 +629,10 @@ export async function sendEmail({
   } catch (error) {
     return {
       status: 'error',
-      detail: String(error),
+      detail:
+        error instanceof Error
+          ? error.message
+          : String(error),
     }
   }
 }
