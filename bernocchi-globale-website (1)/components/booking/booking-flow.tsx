@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { KeyboardEvent, RefObject } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
@@ -278,7 +279,8 @@ const COUNTRY_OPTIONS: CountryOption[] = [
 type Booking = {
   consultationId: string
   mode: string
-  fullName: string
+  firstName: string
+  lastName: string
   email: string
   whatsapp: string
   phoneCountryIso: string
@@ -288,7 +290,7 @@ type Booking = {
   time: string
 }
 
-const STEPS = ['Consultation', 'Mode', 'Your details', 'Confirmation'] as const
+const STEPS = ['Consulta', 'Modalidad', 'Tus datos', 'Confirmación'] as const
 
 const fieldClass =
   'w-full rounded-sm border border-input bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/70 transition-colors focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold'
@@ -321,6 +323,16 @@ export function BookingFlow({
 }) {
   const router = useRouter()
   const countryMenuRef = useRef<HTMLDivElement>(null)
+  const firstNameRef = useRef<HTMLInputElement>(null)
+  const lastNameRef = useRef<HTMLInputElement>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
+  const countryButtonRef = useRef<HTMLButtonElement>(null)
+  const countrySearchRef = useRef<HTMLInputElement>(null)
+  const whatsappRef = useRef<HTMLInputElement>(null)
+  const languageRef = useRef<HTMLSelectElement>(null)
+  const dateRef = useRef<HTMLInputElement>(null)
+  const firstTimeRef = useRef<HTMLButtonElement>(null)
+  const reviewButtonRef = useRef<HTMLButtonElement>(null)
 
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
@@ -331,7 +343,8 @@ export function BookingFlow({
   const [booking, setBooking] = useState<Booking>({
     consultationId: initialConsultationId ?? consultationTypes[0].id,
     mode: 'online',
-    fullName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     whatsapp: '',
     phoneCountryIso: 'CR',
@@ -366,6 +379,39 @@ export function BookingFlow({
     }
   }, [])
 
+  const regionNames = useMemo(() => {
+    try {
+      return new Intl.DisplayNames(['es'], { type: 'region' })
+    } catch {
+      return null
+    }
+  }, [])
+
+  function countryName(country: CountryOption) {
+    return regionNames?.of(country.iso) || country.name
+  }
+
+  useEffect(() => {
+    if (step === 2) {
+      requestAnimationFrame(() => firstNameRef.current?.focus())
+    }
+  }, [step])
+
+  useEffect(() => {
+    if (countryOpen) {
+      requestAnimationFrame(() => countrySearchRef.current?.focus())
+    }
+  }, [countryOpen])
+
+  function moveOnEnter(
+    event: KeyboardEvent<HTMLElement>,
+    target: RefObject<HTMLElement | null>,
+  ) {
+    if (event.key !== 'Enter') return
+    event.preventDefault()
+    target.current?.focus()
+  }
+
   const consultation = useMemo(
     () =>
       consultationTypes.find((item) => item.id === booking.consultationId) ??
@@ -387,13 +433,24 @@ export function BookingFlow({
 
     if (!search) return COUNTRY_OPTIONS
 
-    return COUNTRY_OPTIONS.filter(
-      (country) =>
+    const normalizedSearch = search
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+
+    return COUNTRY_OPTIONS.filter((country) => {
+      const localizedName = countryName(country)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+
+      return (
+        localizedName.includes(normalizedSearch) ||
         country.name.toLowerCase().includes(search) ||
         country.iso.toLowerCase().includes(search) ||
-        (digits.length > 0 && country.dial.includes(digits)),
-    )
-  }, [countrySearch])
+        (digits.length > 0 && country.dial.includes(digits))
+      )
+    })
+  }, [countrySearch, regionNames])
 
   const internationalWhatsApp = `+${selectedCountry.dial}${booking.whatsapp}`
 
@@ -405,11 +462,11 @@ export function BookingFlow({
     setBooking((current) => ({
       ...current,
       phoneCountryIso: country.iso,
-      country: country.name,
-      whatsapp: '',
+      country: countryName(country),
     }))
     setCountrySearch('')
     setCountryOpen(false)
+    requestAnimationFrame(() => whatsappRef.current?.focus())
   }
 
   const canContinue = (() => {
@@ -420,7 +477,8 @@ export function BookingFlow({
         return Boolean(booking.mode)
       case 2:
         return (
-          booking.fullName.trim().length > 1 &&
+          booking.firstName.trim().length > 1 &&
+          booking.lastName.trim().length > 1 &&
           EMAIL_RE.test(booking.email) &&
           booking.whatsapp.length >= 6 &&
           internationalWhatsApp.length <= 16 &&
@@ -450,7 +508,7 @@ export function BookingFlow({
         body: JSON.stringify({
           consultation: consultation.name,
           mode: modeLabel,
-          fullName: booking.fullName,
+          fullName: `${booking.firstName.trim()} ${booking.lastName.trim()}`,
           email: booking.email,
           whatsapp: internationalWhatsApp,
           country: booking.country,
@@ -467,7 +525,7 @@ export function BookingFlow({
       router.push('/health/confirmation')
     } catch {
       setError(
-        'We could not submit your request just now. Please try again, or contact us on WhatsApp.',
+        'No pudimos enviar tu solicitud en este momento. Inténtalo de nuevo o contáctanos por WhatsApp.',
       )
       setSubmitting(false)
     }
@@ -512,7 +570,7 @@ export function BookingFlow({
         {step === 0 ? (
           <fieldset>
             <legend className="font-serif text-2xl text-card-foreground">
-              Choose a consultation
+              Selecciona una consulta
             </legend>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -559,11 +617,11 @@ export function BookingFlow({
         {step === 1 ? (
           <fieldset>
             <legend className="font-serif text-2xl text-card-foreground">
-              Choose consultation mode
+              Elige la modalidad de consulta
             </legend>
 
             <p className="mt-2 text-sm text-muted-foreground">
-              Meet by secure video or in person, whichever suits you.
+              Puedes atenderte mediante videollamada segura o de forma presencial.
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -600,48 +658,81 @@ export function BookingFlow({
         {step === 2 ? (
           <fieldset>
             <legend className="font-serif text-2xl text-card-foreground">
-              Your details
+              Tus datos
             </legend>
 
             <div className="mt-6 grid gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="name" className={labelClass}>
-                  Full name
+                <label htmlFor="firstName" className={labelClass}>
+                  Nombre
                 </label>
 
                 <input
-                  id="name"
+                  ref={firstNameRef}
+                  id="firstName"
+                  name="given-name"
                   type="text"
-                  autoComplete="name"
-                  value={booking.fullName}
+                  autoComplete="given-name"
+                  enterKeyHint="next"
+                  value={booking.firstName}
                   onChange={(event) =>
-                    update('fullName', event.target.value)
+                    update('firstName', event.target.value)
                   }
+                  onKeyDown={(event) => moveOnEnter(event, lastNameRef)}
                   className={fieldClass}
+                  placeholder="Tu nombre"
                 />
               </div>
 
               <div>
-                <label htmlFor="email" className={labelClass}>
-                  Email
+                <label htmlFor="lastName" className={labelClass}>
+                  Apellidos
                 </label>
 
                 <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  value={booking.email}
-                  onChange={(event) => update('email', event.target.value)}
+                  ref={lastNameRef}
+                  id="lastName"
+                  name="family-name"
+                  type="text"
+                  autoComplete="family-name"
+                  enterKeyHint="next"
+                  value={booking.lastName}
+                  onChange={(event) =>
+                    update('lastName', event.target.value)
+                  }
+                  onKeyDown={(event) => moveOnEnter(event, emailRef)}
                   className={fieldClass}
+                  placeholder="Tus apellidos"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <span className={labelClass}>WhatsApp number</span>
+                <label htmlFor="email" className={labelClass}>
+                  Correo electrónico
+                </label>
+
+                <input
+                  ref={emailRef}
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  enterKeyHint="next"
+                  value={booking.email}
+                  onChange={(event) => update('email', event.target.value)}
+                  onKeyDown={(event) => moveOnEnter(event, countryButtonRef)}
+                  className={fieldClass}
+                  placeholder="nombre@correo.com"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <span className={labelClass}>Número de WhatsApp</span>
 
                 <div className="grid gap-3 sm:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
                   <div ref={countryMenuRef} className="relative">
                     <button
+                      ref={countryButtonRef}
                       type="button"
                       onClick={() => setCountryOpen((open) => !open)}
                       className={cn(
@@ -655,7 +746,7 @@ export function BookingFlow({
                         <span className="mr-2" aria-hidden="true">
                           {flagEmoji(selectedCountry.iso)}
                         </span>
-                        <span>{selectedCountry.name}</span>
+                        <span>{countryName(selectedCountry)}</span>
                       </span>
 
                       <span className="flex shrink-0 items-center gap-2 text-muted-foreground">
@@ -670,29 +761,38 @@ export function BookingFlow({
                     </button>
 
                     {countryOpen ? (
-                      <div className="absolute z-50 mt-2 w-full min-w-[18rem] overflow-hidden rounded-sm border border-border bg-card shadow-xl">
-                        <div className="border-b border-border p-2">
-                          <div className="flex items-center gap-2 rounded-sm border border-input bg-background px-3">
-                            <Search className="size-4 shrink-0 text-muted-foreground" />
+                      <div className="absolute z-[80] mt-2 w-full min-w-[19rem] overflow-hidden rounded-sm border border-[#b99752]/50 bg-[#081522] shadow-2xl shadow-black/40">
+                        <div className="border-b border-[#b99752]/25 bg-[#081522] p-3">
+                          <div className="flex items-center gap-2 rounded-sm border border-[#b99752]/40 bg-[#0d1d2d] px-3 focus-within:border-[#d4b66f] focus-within:ring-1 focus-within:ring-[#d4b66f]">
+                            <Search className="size-4 shrink-0 text-[#d4b66f]" />
 
                             <input
+                              ref={countrySearchRef}
                               type="search"
-                              autoFocus
                               value={countrySearch}
                               onChange={(event) =>
                                 setCountrySearch(event.target.value)
                               }
-                              placeholder="Search country or calling code"
-                              className="w-full bg-transparent py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/70"
-                              aria-label="Search country or calling code"
+                              onKeyDown={(event) => {
+                                if (
+                                  event.key === 'Enter' &&
+                                  filteredCountries[0]
+                                ) {
+                                  event.preventDefault()
+                                  selectCountry(filteredCountries[0])
+                                }
+                              }}
+                              placeholder="Buscar país o prefijo"
+                              className="w-full bg-transparent py-3 text-sm text-[#f5f0e6] outline-none placeholder:text-[#aeb7bf]"
+                              aria-label="Buscar país o prefijo"
                             />
                           </div>
                         </div>
 
                         <ul
                           role="listbox"
-                          aria-label="Countries and calling codes"
-                          className="max-h-64 overflow-y-auto py-1"
+                          aria-label="Países y prefijos telefónicos"
+                          className="max-h-72 overflow-y-auto overscroll-contain bg-[#081522] py-1 [scrollbar-color:#b99752_#081522]"
                         >
                           {filteredCountries.length > 0 ? (
                             filteredCountries.map((country) => {
@@ -707,21 +807,27 @@ export function BookingFlow({
                                     aria-selected={selected}
                                     onClick={() => selectCountry(country)}
                                     className={cn(
-                                      'flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-secondary',
-                                      selected && 'bg-gold/10 text-gold',
+                                      'flex w-full items-center justify-between gap-4 px-4 py-3 text-left text-sm text-[#f5f0e6] transition-colors hover:bg-[#b99752]/15 hover:text-white focus:bg-[#b99752]/20 focus:outline-none',
+                                      selected &&
+                                        'bg-[#b99752]/20 text-[#e4c983]',
                                     )}
                                   >
                                     <span className="min-w-0 truncate">
                                       <span
-                                        className="mr-2"
+                                        className="mr-2.5 text-base"
                                         aria-hidden="true"
                                       >
                                         {flagEmoji(country.iso)}
                                       </span>
-                                      {country.name}
+                                      {countryName(country)}
                                     </span>
 
-                                    <span className="shrink-0 text-muted-foreground">
+                                    <span
+                                      className={cn(
+                                        'shrink-0 font-medium text-[#b9c1c9]',
+                                        selected && 'text-[#e4c983]',
+                                      )}
+                                    >
                                       +{country.dial}
                                     </span>
                                   </button>
@@ -729,8 +835,8 @@ export function BookingFlow({
                               )
                             })
                           ) : (
-                            <li className="px-4 py-5 text-center text-sm text-muted-foreground">
-                              No country found.
+                            <li className="px-4 py-6 text-center text-sm text-[#b9c1c9]">
+                              No encontramos ese país o prefijo.
                             </li>
                           )}
                         </ul>
@@ -744,53 +850,43 @@ export function BookingFlow({
                     </span>
 
                     <input
+                      ref={whatsappRef}
                       id="whatsapp"
+                      name="tel-national"
                       type="tel"
                       inputMode="numeric"
                       autoComplete="tel-national"
-                      placeholder="Phone number"
+                      enterKeyHint="next"
+                      placeholder="Número telefónico"
                       value={booking.whatsapp}
                       onChange={(event) =>
                         update('whatsapp', phoneDigits(event.target.value))
                       }
+                      onKeyDown={(event) => moveOnEnter(event, languageRef)}
                       className="min-w-0 flex-1 bg-transparent px-3.5 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/70"
                     />
                   </div>
                 </div>
 
-                <p className="mt-2 text-xs text-muted-foreground">
-                  The international prefix is added automatically. Your number
-                  will be sent as {internationalWhatsApp}.
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  Selecciona tu país y escribe únicamente el número. El prefijo
+                  internacional se añadirá automáticamente: {internationalWhatsApp}.
                 </p>
               </div>
 
               <div>
-                <label htmlFor="country" className={labelClass}>
-                  Country
-                </label>
-
-                <input
-                  id="country"
-                  type="text"
-                  value={
-                    `${flagEmoji(selectedCountry.iso)} ${booking.country}`
-                  }
-                  readOnly
-                  className={cn(fieldClass, 'cursor-default bg-secondary')}
-                />
-              </div>
-
-              <div>
                 <label htmlFor="language" className={labelClass}>
-                  Preferred language
+                  Idioma preferido
                 </label>
 
                 <select
+                  ref={languageRef}
                   id="language"
                   value={booking.language}
                   onChange={(event) =>
                     update('language', event.target.value)
                   }
+                  onKeyDown={(event) => moveOnEnter(event, dateRef)}
                   className={fieldClass}
                 >
                   {languages.map((language) => (
@@ -803,15 +899,18 @@ export function BookingFlow({
 
               <div>
                 <label htmlFor="date" className={labelClass}>
-                  Preferred date
+                  Fecha preferida
                 </label>
 
                 <input
+                  ref={dateRef}
                   id="date"
                   type="date"
+                  enterKeyHint="next"
                   min={todayISO()}
                   value={booking.date}
                   onChange={(event) => update('date', event.target.value)}
+                  onKeyDown={(event) => moveOnEnter(event, firstTimeRef)}
                   className={fieldClass}
                 />
               </div>
@@ -826,9 +925,13 @@ export function BookingFlow({
 
                   return (
                     <button
+                      ref={slot === bookingTimeSlots[0] ? firstTimeRef : undefined}
                       key={slot}
                       type="button"
-                      onClick={() => update('time', slot)}
+                      onClick={() => {
+                        update('time', slot)
+                        requestAnimationFrame(() => reviewButtonRef.current?.focus())
+                      }}
                       className={cn(
                         'rounded-sm border py-2 text-sm transition-colors',
                         selected
@@ -845,9 +948,9 @@ export function BookingFlow({
             </div>
 
             <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-              Please do not include clinical or medical information. This is an
-              appointment request only — times are indicative and will be
-              confirmed by the Segreteria Generale.
+              No incluyas información clínica o médica. Esta es únicamente una
+              solicitud de cita; el horario será confirmado por la Segreteria
+              Generale.
             </p>
           </fieldset>
         ) : null}
@@ -855,36 +958,35 @@ export function BookingFlow({
         {step === 3 ? (
           <div>
             <h3 className="font-serif text-2xl text-card-foreground">
-              Review your request
+              Revisa tu solicitud
             </h3>
 
             <p className="mt-2 text-sm text-muted-foreground">
-              Please confirm the details below before submitting your
-              appointment request.
+              Confirma los datos antes de enviar tu solicitud de cita.
             </p>
 
             <div className="mt-5 rounded-sm border border-border bg-secondary p-5 text-sm">
               <dl className="grid gap-2 sm:grid-cols-2">
                 <SummaryRow
-                  label="Consultation"
+                  label="Consulta"
                   value={consultation.name}
                 />
                 <SummaryRow
-                  label="Duration"
+                  label="Duración"
                   value={consultation.duration}
                 />
-                <SummaryRow label="Mode" value={modeLabel} />
-                <SummaryRow label="Language" value={languageLabel} />
+                <SummaryRow label="Modalidad" value={modeLabel} />
+                <SummaryRow label="Idioma" value={languageLabel} />
                 <SummaryRow
-                  label="Date & time"
+                  label="Fecha y hora"
                   value={`${booking.date || '—'} · ${booking.time || '—'}`}
                 />
                 <SummaryRow
-                  label="Full name"
-                  value={booking.fullName || '—'}
+                  label="Nombre completo"
+                  value={`${booking.firstName} ${booking.lastName}`.trim() || '—'}
                 />
                 <SummaryRow
-                  label="Email"
+                  label="Correo electrónico"
                   value={booking.email || '—'}
                 />
                 <SummaryRow
@@ -892,9 +994,9 @@ export function BookingFlow({
                   value={internationalWhatsApp}
                 />
                 <SummaryRow
-                  label="Country"
+                  label="País"
                   value={
-                    `${flagEmoji(selectedCountry.iso)} ${booking.country}`
+                    `${flagEmoji(selectedCountry.iso)} ${countryName(selectedCountry)}`
                   }
                 />
               </dl>
@@ -918,11 +1020,11 @@ export function BookingFlow({
               {submitting ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Submitting…
+                  Enviando…
                 </>
               ) : (
                 <>
-                  Submit appointment request
+                  Enviar solicitud de cita
                   <ArrowRight className="size-4" />
                 </>
               )}
@@ -939,16 +1041,17 @@ export function BookingFlow({
               className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
             >
               <ArrowLeft className="size-4" />
-              Back
+              Atrás
             </button>
 
             <button
+              ref={reviewButtonRef}
               type="button"
               onClick={() => setStep((current) => current + 1)}
               disabled={!canContinue}
               className="inline-flex items-center gap-2 rounded-sm bg-gold px-6 py-3 text-sm font-medium text-navy transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {step === 2 ? 'Review request' : 'Continue'}
+              {step === 2 ? 'Revisar solicitud' : 'Continuar'}
               <ArrowRight className="size-4" />
             </button>
           </div>
@@ -961,7 +1064,7 @@ export function BookingFlow({
               className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
             >
               <ArrowLeft className="size-4" />
-              Back to details
+              Volver a los datos
             </button>
           </div>
         )}
