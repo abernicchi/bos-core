@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 import {
   buildAppointmentConfirmationEmail,
+  buildAppointmentConfirmationText,
+  getAppointmentConfirmationSubject,
   sendEmail,
   SEGRETERIA_RECIPIENT,
 } from '@/lib/email'
-import { site } from '@/lib/content'
 
 /**
  * Appointment-request endpoint for Bernocchi Health.
@@ -126,43 +127,24 @@ export async function POST(request: Request) {
     )
   }
 
-  /*
-   * Plain-text fallback for email clients that do not render HTML.
-   */
-  const confirmationText = [
-    `Dear ${fullName},`,
-    '',
-    'Thank you for contacting Bernocchi Health.',
-    '',
-    'Your appointment request has been received by our Segreteria Generale. A member of our office will review the requested date and contact you personally to confirm availability and the next steps.',
-    '',
-    `Consultation: ${consultation}`,
-    `Mode: ${mode}`,
-    `Preferred date: ${date}`,
-    `Preferred time: ${time}`,
-    `Preferred language: ${language || 'Not specified'}`,
-    '',
-    'This communication confirms receipt of your request. It does not yet constitute a confirmed appointment, and no payment has been taken.',
-    '',
-    'With our regards,',
-    'Segreteria Generale',
-    site.name,
-    site.legalName,
-    site.domain,
-  ].join('\n')
+  const confirmationData = {
+    fullName,
+    consultation,
+    mode,
+    date,
+    time,
+    language,
+  }
 
   /*
-   * Premium HTML presentation defined in lib/email.ts.
+   * Plain-text fallback and premium HTML presentation are generated
+   * from the same language-aware source.
    */
+  const confirmationText =
+    buildAppointmentConfirmationText(confirmationData)
+
   const confirmationHtml =
-    buildAppointmentConfirmationEmail({
-      fullName,
-      consultation,
-      mode,
-      date,
-      time,
-      language,
-    })
+    buildAppointmentConfirmationEmail(confirmationData)
 
   /*
    * Patient confirmation is best-effort:
@@ -172,8 +154,7 @@ export async function POST(request: Request) {
     const patientConfirmation = await sendEmail({
       to: email,
       replyTo: SEGRETERIA_RECIPIENT,
-      subject:
-        'Your appointment request has been received — Bernocchi Health',
+      subject: getAppointmentConfirmationSubject(language),
       text: confirmationText,
       html: confirmationHtml,
     })
