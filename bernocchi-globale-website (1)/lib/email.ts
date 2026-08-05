@@ -38,6 +38,163 @@ export type AppointmentConfirmationData = {
   language: string
 }
 
+type AppointmentLanguage = 'es' | 'it' | 'en'
+
+type AppointmentCopy = {
+  htmlLang: AppointmentLanguage
+  locale: string
+  subject: string
+  title: string
+  preheader: string
+  greeting: (name: string) => string
+  opening: string
+  followUp: string
+  summaryTitle: string
+  consultationLabel: string
+  modeLabel: string
+  dateLabel: string
+  timeLabel: string
+  languageLabel: string
+  button: string
+  notice: string
+  regards: string
+  confidentiality: string
+  generated: string
+  unspecified: string
+}
+
+const APPOINTMENT_COPY: Record<AppointmentLanguage, AppointmentCopy> = {
+  es: {
+    htmlLang: 'es',
+    locale: 'es-ES',
+    subject: 'Hemos recibido su solicitud de cita — Bernocchi Health',
+    title: 'Hemos recibido su solicitud',
+    preheader:
+      'La Segreteria Generale ha recibido su solicitud de cita.',
+    greeting: (name) => `Estimado/a ${name},`,
+    opening:
+      'Gracias por contactar con Bernocchi Health. Su solicitud de cita ha sido recibida y puesta a disposición de nuestra Segreteria Generale.',
+    followUp:
+      'Nuestro equipo revisará la fecha solicitada y se pondrá en contacto con usted personalmente para confirmar la disponibilidad y los siguientes pasos.',
+    summaryTitle: 'Resumen de la solicitud',
+    consultationLabel: 'Consulta',
+    modeLabel: 'Modalidad',
+    dateLabel: 'Fecha preferida',
+    timeLabel: 'Hora preferida',
+    languageLabel: 'Idioma preferido',
+    button: 'Visitar Bernocchi Health',
+    notice:
+      'Esta comunicación confirma la recepción de su solicitud. Todavía no constituye una cita confirmada y no se ha realizado ningún cobro.',
+    regards: 'Atentamente,',
+    confidentiality: 'Comunicación institucional confidencial.',
+    generated:
+      'Este mensaje se generó porque se envió una solicitud de cita en',
+    unspecified: 'No especificado',
+  },
+  it: {
+    htmlLang: 'it',
+    locale: 'it-IT',
+    subject:
+      'Abbiamo ricevuto la Sua richiesta di appuntamento — Bernocchi Health',
+    title: 'Abbiamo ricevuto la Sua richiesta',
+    preheader:
+      'La Segreteria Generale ha ricevuto la Sua richiesta di appuntamento.',
+    greeting: (name) => `Gentile ${name},`,
+    opening:
+      'La ringraziamo per aver contattato Bernocchi Health. La Sua richiesta di appuntamento è stata ricevuta e sottoposta all’attenzione della nostra Segreteria Generale.',
+    followUp:
+      'Il nostro ufficio esaminerà la data richiesta e La contatterà personalmente per confermare la disponibilità e i passaggi successivi.',
+    summaryTitle: 'Riepilogo della richiesta',
+    consultationLabel: 'Consulto',
+    modeLabel: 'Modalità',
+    dateLabel: 'Data preferita',
+    timeLabel: 'Orario preferito',
+    languageLabel: 'Lingua preferita',
+    button: 'Visita Bernocchi Health',
+    notice:
+      'Questa comunicazione conferma la ricezione della Sua richiesta. Non costituisce ancora un appuntamento confermato e non è stato effettuato alcun pagamento.',
+    regards: 'Con i nostri più cordiali saluti,',
+    confidentiality: 'Comunicazione istituzionale riservata.',
+    generated:
+      'Questo messaggio è stato generato perché è stata inviata una richiesta di appuntamento su',
+    unspecified: 'Non specificato',
+  },
+  en: {
+    htmlLang: 'en',
+    locale: 'en-GB',
+    subject:
+      'Your appointment request has been received — Bernocchi Health',
+    title: 'Your appointment request has been received',
+    preheader:
+      'Your appointment request has been received by the Segreteria Generale.',
+    greeting: (name) => `Dear ${name},`,
+    opening:
+      'Thank you for contacting Bernocchi Health. Your appointment request has been received and placed under the attention of our Segreteria Generale.',
+    followUp:
+      'A member of our office will review the requested date and contact you personally to confirm availability and the next steps.',
+    summaryTitle: 'Request summary',
+    consultationLabel: 'Consultation',
+    modeLabel: 'Modality',
+    dateLabel: 'Preferred date',
+    timeLabel: 'Preferred time',
+    languageLabel: 'Preferred language',
+    button: 'Visit Bernocchi Health',
+    notice:
+      'This communication confirms receipt of your request. It does not yet constitute a confirmed appointment, and no payment has been taken.',
+    regards: 'With our regards,',
+    confidentiality: 'Confidential institutional communication.',
+    generated:
+      'This message was generated because an appointment request was submitted at',
+    unspecified: 'Not specified',
+  },
+}
+
+const CONSULTATION_TRANSLATIONS: Record<
+  AppointmentLanguage,
+  Record<string, string>
+> = {
+  es: {
+    'clinical sexology': 'Sexología clínica',
+    'couples therapy': 'Terapia de pareja',
+    "men's sexual health": 'Salud sexual masculina',
+    "women's sexual health": 'Salud sexual femenina',
+    'online consultation': 'Consulta en línea',
+    'executive consultation': 'Consulta ejecutiva',
+  },
+  it: {
+    'clinical sexology': 'Sessuologia clinica',
+    'couples therapy': 'Terapia di coppia',
+    "men's sexual health": 'Salute sessuale maschile',
+    "women's sexual health": 'Salute sessuale femminile',
+    'online consultation': 'Consulto online',
+    'executive consultation': 'Consulenza executive',
+  },
+  en: {},
+}
+
+const MODE_TRANSLATIONS: Record<
+  AppointmentLanguage,
+  Record<string, string>
+> = {
+  es: {
+    online: 'En línea',
+    'in person': 'Presencial',
+    'in-person': 'Presencial',
+    presencial: 'Presencial',
+  },
+  it: {
+    online: 'Online',
+    'in person': 'In presenza',
+    'in-person': 'In presenza',
+    presencial: 'In presenza',
+  },
+  en: {
+    presencial: 'In person',
+    'en línea': 'Online',
+    'en linea': 'Online',
+  },
+}
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll('&', '&amp;')
@@ -45,6 +202,127 @@ function escapeHtml(value: string): string {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;')
+}
+
+function normalizeForLookup(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+function resolveAppointmentLanguage(value: string): AppointmentLanguage {
+  const normalized = normalizeForLookup(value)
+
+  if (
+    normalized === 'es' ||
+    normalized.includes('espanol') ||
+    normalized.includes('spanish')
+  ) {
+    return 'es'
+  }
+
+  if (
+    normalized === 'it' ||
+    normalized.includes('italiano') ||
+    normalized.includes('italian')
+  ) {
+    return 'it'
+  }
+
+  return 'en'
+}
+
+function localizeConsultation(
+  consultation: string,
+  language: AppointmentLanguage,
+): string {
+  const normalized = normalizeForLookup(consultation)
+  return CONSULTATION_TRANSLATIONS[language][normalized] ?? consultation
+}
+
+function localizeMode(
+  mode: string,
+  language: AppointmentLanguage,
+): string {
+  const normalized = normalizeForLookup(mode)
+  return MODE_TRANSLATIONS[language][normalized] ?? mode
+}
+
+function localizeLanguageName(
+  language: AppointmentLanguage,
+): string {
+  if (language === 'es') return 'Español'
+  if (language === 'it') return 'Italiano'
+  return 'English'
+}
+
+function formatAppointmentDate(
+  date: string,
+  copy: AppointmentCopy,
+): string {
+  const isoDate = /^\d{4}-\d{2}-\d{2}$/.test(date)
+
+  if (!isoDate) return date
+
+  const parsedDate = new Date(`${date}T12:00:00`)
+
+  if (Number.isNaN(parsedDate.getTime())) return date
+
+  return new Intl.DateTimeFormat(copy.locale, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(parsedDate)
+}
+
+export function getAppointmentConfirmationSubject(
+  language: string,
+): string {
+  const languageCode = resolveAppointmentLanguage(language)
+  return APPOINTMENT_COPY[languageCode].subject
+}
+
+export function buildAppointmentConfirmationText({
+  fullName,
+  consultation,
+  mode,
+  date,
+  time,
+  language,
+}: AppointmentConfirmationData): string {
+  const languageCode = resolveAppointmentLanguage(language)
+  const copy = APPOINTMENT_COPY[languageCode]
+  const localizedConsultation = localizeConsultation(
+    consultation,
+    languageCode,
+  )
+  const localizedMode = localizeMode(mode, languageCode)
+  const localizedDate = formatAppointmentDate(date, copy)
+  const localizedLanguage = localizeLanguageName(languageCode)
+
+  return [
+    copy.greeting(fullName),
+    '',
+    copy.opening,
+    '',
+    copy.followUp,
+    '',
+    `${copy.consultationLabel}: ${localizedConsultation}`,
+    `${copy.modeLabel}: ${localizedMode}`,
+    `${copy.dateLabel}: ${localizedDate}`,
+    `${copy.timeLabel}: ${time}`,
+    `${copy.languageLabel}: ${localizedLanguage}`,
+    '',
+    copy.notice,
+    '',
+    copy.regards,
+    'Segreteria Generale',
+    'Casa Bernocchi',
+    site.legalName,
+    site.domain,
+  ].join('\n')
 }
 
 /**
@@ -61,25 +339,38 @@ export function buildAppointmentConfirmationEmail({
   time,
   language,
 }: AppointmentConfirmationData): string {
-  const safeName = escapeHtml(fullName)
-  const safeConsultation = escapeHtml(consultation)
-  const safeMode = escapeHtml(mode)
-  const safeDate = escapeHtml(date)
+  const languageCode = resolveAppointmentLanguage(language)
+  const copy = APPOINTMENT_COPY[languageCode]
+
+  const localizedConsultation = localizeConsultation(
+    consultation,
+    languageCode,
+  )
+  const localizedMode = localizeMode(mode, languageCode)
+  const localizedDate = formatAppointmentDate(date, copy)
+  const localizedLanguage = localizeLanguageName(languageCode)
+
+  const safeConsultation = escapeHtml(localizedConsultation)
+  const safeMode = escapeHtml(localizedMode)
+  const safeDate = escapeHtml(localizedDate)
   const safeTime = escapeHtml(time)
-  const safeLanguage = escapeHtml(language || 'Not specified')
+  const safeLanguage = escapeHtml(
+    localizedLanguage || copy.unspecified,
+  )
 
   const websiteUrl = site.url.replace(/\/$/, '')
   const healthUrl = `${websiteUrl}/health`
+  const logoUrl = `${websiteUrl}/images/casa-bernocchi-logo.jpeg`
   const year = new Date().getFullYear()
 
   return `<!doctype html>
-<html lang="en">
+<html lang="${copy.htmlLang}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
     <meta name="supported-color-schemes" content="light">
-    <title>Appointment request received — Bernocchi Health</title>
+    <title>${escapeHtml(copy.subject)}</title>
 
     <style>
       @media only screen and (max-width: 640px) {
@@ -90,6 +381,11 @@ export function buildAppointmentConfirmationEmail({
         .email-padding {
           padding-left: 24px !important;
           padding-right: 24px !important;
+        }
+
+        .institutional-image {
+          width: 100% !important;
+          height: auto !important;
         }
 
         .details-label,
@@ -124,7 +420,7 @@ export function buildAppointmentConfirmationEmail({
         color: transparent;
       "
     >
-      Your appointment request has been received by the Segreteria Generale.
+      ${escapeHtml(copy.preheader)}
     </div>
 
     <table
@@ -159,27 +455,27 @@ export function buildAppointmentConfirmationEmail({
                 align="center"
                 class="email-padding"
                 style="
-                  padding: 42px 52px 36px;
-                  background-color: #081522;
+                  padding: 24px 40px 36px;
+                  background-color: #05090d;
                   border-bottom: 4px solid #b99752;
                 "
               >
-                <div
+                <img
+                  src="${logoUrl}"
+                  width="536"
+                  alt="Casa Bernocchi — Domus Fvndatrix"
+                  class="institutional-image"
                   style="
-                    width: 58px;
-                    height: 58px;
-                    line-height: 58px;
-                    border: 1px solid #b99752;
-                    border-radius: 50%;
-                    color: #d4b66f;
-                    font-family: Georgia, 'Times New Roman', serif;
-                    font-size: 30px;
-                    text-align: center;
-                    margin: 0 auto 20px;
+                    display: block;
+                    width: 100%;
+                    max-width: 536px;
+                    height: auto;
+                    margin: 0 auto 26px;
+                    border: 0;
+                    outline: none;
+                    text-decoration: none;
                   "
                 >
-                  B
-                </div>
 
                 <div
                   style="
@@ -203,7 +499,7 @@ export function buildAppointmentConfirmationEmail({
                     font-weight: normal;
                   "
                 >
-                  Appointment request received
+                  ${escapeHtml(copy.title)}
                 </h1>
 
                 <p
@@ -233,7 +529,7 @@ export function buildAppointmentConfirmationEmail({
                     line-height: 1.5;
                   "
                 >
-                  Dear ${safeName},
+                  ${escapeHtml(copy.greeting(fullName))}
                 </p>
 
                 <p
@@ -244,9 +540,7 @@ export function buildAppointmentConfirmationEmail({
                     line-height: 1.8;
                   "
                 >
-                  Thank you for contacting Bernocchi Health. Your appointment
-                  request has been received and placed under the attention of
-                  our Segreteria Generale.
+                  ${escapeHtml(copy.opening)}
                 </p>
 
                 <p
@@ -257,9 +551,7 @@ export function buildAppointmentConfirmationEmail({
                     line-height: 1.8;
                   "
                 >
-                  A member of our office will review the requested date and
-                  contact you personally to confirm availability and the next
-                  steps.
+                  ${escapeHtml(copy.followUp)}
                 </p>
               </td>
             </tr>
@@ -281,7 +573,7 @@ export function buildAppointmentConfirmationEmail({
                     text-transform: uppercase;
                   "
                 >
-                  Request summary
+                  ${escapeHtml(copy.summaryTitle)}
                 </div>
               </td>
             </tr>
@@ -315,7 +607,7 @@ export function buildAppointmentConfirmationEmail({
                         text-transform: uppercase;
                       "
                     >
-                      Consultation
+                      ${escapeHtml(copy.consultationLabel)}
                     </td>
 
                     <td
@@ -344,7 +636,7 @@ export function buildAppointmentConfirmationEmail({
                         text-transform: uppercase;
                       "
                     >
-                      Modality
+                      ${escapeHtml(copy.modeLabel)}
                     </td>
 
                     <td
@@ -373,7 +665,7 @@ export function buildAppointmentConfirmationEmail({
                         text-transform: uppercase;
                       "
                     >
-                      Preferred date
+                      ${escapeHtml(copy.dateLabel)}
                     </td>
 
                     <td
@@ -402,7 +694,7 @@ export function buildAppointmentConfirmationEmail({
                         text-transform: uppercase;
                       "
                     >
-                      Preferred time
+                      ${escapeHtml(copy.timeLabel)}
                     </td>
 
                     <td
@@ -430,7 +722,7 @@ export function buildAppointmentConfirmationEmail({
                         text-transform: uppercase;
                       "
                     >
-                      Preferred language
+                      ${escapeHtml(copy.languageLabel)}
                     </td>
 
                     <td
@@ -482,7 +774,7 @@ export function buildAppointmentConfirmationEmail({
                           text-transform: uppercase;
                         "
                       >
-                        Visit Bernocchi Health
+                        ${escapeHtml(copy.button)}
                       </a>
                     </td>
                   </tr>
@@ -507,9 +799,7 @@ export function buildAppointmentConfirmationEmail({
                     line-height: 1.75;
                   "
                 >
-                  This communication confirms receipt of your request. It does
-                  not yet constitute a confirmed appointment, and no payment
-                  has been taken.
+                  ${escapeHtml(copy.notice)}
                 </p>
 
                 <p
@@ -521,7 +811,7 @@ export function buildAppointmentConfirmationEmail({
                     line-height: 1.6;
                   "
                 >
-                  With our regards,<br>
+                  ${escapeHtml(copy.regards)}<br>
                   <strong>Segreteria Generale</strong><br>
                   Casa Bernocchi
                 </p>
@@ -557,7 +847,7 @@ export function buildAppointmentConfirmationEmail({
                     line-height: 1.7;
                   "
                 >
-                  ${site.legalName}<br>
+                  ${escapeHtml(site.legalName)}<br>
                   Milano · Costa Rica
                 </p>
 
@@ -569,8 +859,7 @@ export function buildAppointmentConfirmationEmail({
                     line-height: 1.6;
                   "
                 >
-                  © ${year} Casa Bernocchi. Confidential institutional
-                  communication.
+                  © ${year} Casa Bernocchi. ${escapeHtml(copy.confidentiality)}
                 </p>
               </td>
             </tr>
@@ -585,8 +874,7 @@ export function buildAppointmentConfirmationEmail({
               text-align: center;
             "
           >
-            This message was generated because an appointment request was
-            submitted at ${site.domain}.
+            ${escapeHtml(copy.generated)} ${escapeHtml(site.domain)}.
           </p>
         </td>
       </tr>
