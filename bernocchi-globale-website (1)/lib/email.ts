@@ -1,9 +1,9 @@
 import { site } from '@/lib/content'
 
 /**
- * CASA BERNOCCHI — EMAIL SYSTEM
- * -----------------------------
- * Transactional delivery through Resend.
+ * CASA BERNOCCHI — PREMIUM EMAIL SYSTEM
+ * --------------------------------------
+ * Transactional email delivery through Resend.
  *
  * Required:
  *   RESEND_API_KEY
@@ -25,6 +25,9 @@ const SITE_URL = site.url.replace(/\/$/, '')
 
 const LOGO_URL =
   `${SITE_URL}/images/casa-bernocchi-logo.jpeg`
+
+const WHATSAPP_RECEIPT_URL =
+  'https://wa.me/50683703939?text=Adjunto%20el%20comprobante%20del%20dep%C3%B3sito%20de%20reserva%20de%20mi%20cita.'
 
 type SendArgs = {
   to: string | string[]
@@ -93,78 +96,288 @@ function resolveLanguage(
 const confirmationCopy = {
   es: {
     htmlLanguage: 'es',
+
     subject:
-      'Hemos recibido su solicitud de cita — Bernocchi Health',
-    eyebrow: 'Confirmación institucional',
-    title: 'Su solicitud ha sido recibida',
+      'Reserva provisional de su cita — Depósito pendiente',
+
+    eyebrow:
+      'Confirmación institucional',
+
+    title:
+      'Su solicitud ha sido recibida',
+
     greeting: (name: string) =>
       `Estimado/a ${name},`,
+
     introduction:
-      'Gracias por confiar en Bernocchi Health. La Segreteria Generale ha recibido correctamente su solicitud y revisará la disponibilidad con la máxima discreción.',
+      'Gracias por confiar en Bernocchi Health. La Segreteria Generale ha recibido correctamente su solicitud y ha registrado los siguientes datos para la reserva de su atención.',
+
     labels: {
       consultation: 'Consulta',
       mode: 'Modalidad',
-      date: 'Fecha preferida',
-      time: 'Hora preferida',
+      date: 'Fecha solicitada',
+      time: 'Hora solicitada',
       language: 'Idioma preferido',
     },
-    notice:
-      'La fecha y la hora indicadas constituyen una solicitud. La cita quedará confirmada únicamente cuando la Segreteria Generale se comunique con usted. No se ha realizado ningún cobro.',
+
+    reservationTitle:
+      'Reserva provisional',
+
+    reservationNotice:
+      'La fecha y la hora seleccionadas constituyen una reserva provisional. El espacio quedará confirmado únicamente después de que la Segreteria Generale verifique el depósito de reserva y remita la confirmación definitiva.',
+
+    paymentEyebrow:
+      'SINPE Móvil',
+
+    paymentTitle:
+      'Depósito de reserva',
+
+    paymentAmount:
+      '₡25.000 CRC',
+
+    paymentExplanation:
+      'Este depósito es un monto fijo de reserva y no representa un porcentaje del precio de la consulta. Será acreditado al importe final de la atención, cuyos honorarios se expresan en dólares estadounidenses.',
+
+    paymentNumberLabel:
+      'Número SINPE Móvil',
+
+    paymentNumber:
+      '+506 8370-3939',
+
+    paymentHolderLabel:
+      'Titular',
+
+    paymentHolder:
+      'Sociedad de Responsabilidad Limitada',
+
+    legalIdLabel:
+      'Cédula jurídica',
+
+    legalId:
+      '3-102-888680',
+
+    receiptTitle:
+      'Envío del comprobante',
+
+    receiptText:
+      'Después de realizar el depósito, remita el comprobante mediante WhatsApp o respondiendo directamente a este correo. Indique el nombre completo de la persona para quien se solicita la cita.',
+
+    whatsappButton:
+      'Enviar comprobante por WhatsApp',
+
+    policiesTitle:
+      'Condiciones de reserva',
+
+    policies: [
+      'El horario permanecerá reservado provisionalmente durante 30 minutos. Si el comprobante no es recibido dentro de ese plazo, el espacio podrá quedar nuevamente disponible.',
+      'Se permite una reprogramación sin penalización cuando sea solicitada con al menos 24 horas de anticipación. La nueva fecha estará sujeta a disponibilidad y deberá programarse dentro de los 30 días siguientes.',
+      'Las cancelaciones comunicadas con menos de 24 horas de anticipación y las ausencias sin aviso implican la pérdida del depósito de reserva.',
+      'La consulta finalizará a la hora originalmente programada. Un retraso superior a 20 minutos podrá considerarse ausencia.',
+      'Cuando Bernocchi Health deba cancelar o modificar la cita, el depósito podrá trasladarse íntegramente a una nueva fecha o devolverse.',
+      'El saldo restante deberá cancelarse antes del inicio de la consulta, conforme a las instrucciones remitidas por la Segreteria Generale.',
+    ],
+
+    finalNotice:
+      'La cita quedará oficialmente confirmada únicamente cuando la Segreteria Generale verifique el comprobante y envíe una segunda comunicación de confirmación.',
+
     reply:
       'Para cualquier aclaración adicional, puede responder directamente a este correo.',
-    regards: 'Con nuestra más alta consideración',
+
+    regards:
+      'Con nuestra más alta consideración',
+
     transaction:
       'Esta comunicación fue generada después de una solicitud realizada desde el sitio oficial de Casa Bernocchi.',
   },
 
   it: {
     htmlLanguage: 'it',
+
     subject:
-      'Abbiamo ricevuto la Sua richiesta di appuntamento — Bernocchi Health',
-    eyebrow: 'Conferma istituzionale',
-    title: 'La Sua richiesta è stata ricevuta',
+      'Prenotazione provvisoria — Deposito in attesa',
+
+    eyebrow:
+      'Conferma istituzionale',
+
+    title:
+      'La Sua richiesta è stata ricevuta',
+
     greeting: (name: string) =>
       `Gentile ${name},`,
+
     introduction:
-      'La ringraziamo per la fiducia accordata a Bernocchi Health. La Segreteria Generale ha ricevuto correttamente la Sua richiesta e verificherà la disponibilità con la massima discrezione.',
+      'La ringraziamo per la fiducia accordata a Bernocchi Health. La Segreteria Generale ha ricevuto correttamente la Sua richiesta e ha registrato i seguenti dati.',
+
     labels: {
       consultation: 'Consulenza',
       mode: 'Modalità',
-      date: 'Data preferita',
-      time: 'Orario preferito',
+      date: 'Data richiesta',
+      time: 'Orario richiesto',
       language: 'Lingua preferita',
     },
-    notice:
-      'La data e l’orario indicati costituiscono una richiesta. L’appuntamento sarà confermato esclusivamente dalla Segreteria Generale. Non è stato effettuato alcun addebito.',
+
+    reservationTitle:
+      'Prenotazione provvisoria',
+
+    reservationNotice:
+      'La data e l’orario selezionati costituiscono una prenotazione provvisoria. L’appuntamento sarà confermato esclusivamente dopo la verifica del deposito da parte della Segreteria Generale.',
+
+    paymentEyebrow:
+      'SINPE Móvil',
+
+    paymentTitle:
+      'Deposito di prenotazione',
+
+    paymentAmount:
+      '₡25.000 CRC',
+
+    paymentExplanation:
+      'Il deposito è un importo fisso di prenotazione e non rappresenta una percentuale del prezzo della consulenza. Sarà accreditato all’importo finale, espresso in dollari statunitensi.',
+
+    paymentNumberLabel:
+      'Numero SINPE Móvil',
+
+    paymentNumber:
+      '+506 8370-3939',
+
+    paymentHolderLabel:
+      'Intestatario',
+
+    paymentHolder:
+      'Sociedad de Responsabilidad Limitada',
+
+    legalIdLabel:
+      'Identificazione giuridica',
+
+    legalId:
+      '3-102-888680',
+
+    receiptTitle:
+      'Invio della ricevuta',
+
+    receiptText:
+      'Dopo il pagamento, invii la ricevuta tramite WhatsApp oppure rispondendo direttamente a questa comunicazione. Indichi il nome completo della persona interessata.',
+
+    whatsappButton:
+      'Inviare la ricevuta tramite WhatsApp',
+
+    policiesTitle:
+      'Condizioni di prenotazione',
+
+    policies: [
+      'L’orario resterà riservato provvisoriamente per 30 minuti. In assenza della ricevuta entro tale termine, lo spazio potrà tornare disponibile.',
+      'È consentita una riprogrammazione senza penalità con almeno 24 ore di preavviso, soggetta a disponibilità e da effettuarsi entro i 30 giorni successivi.',
+      'Le cancellazioni comunicate con meno di 24 ore di anticipo e le assenze comportano la perdita del deposito.',
+      'La consulenza terminerà all’orario originariamente previsto. Un ritardo superiore a 20 minuti potrà essere considerato assenza.',
+      'Qualora Bernocchi Health debba modificare o annullare l’appuntamento, il deposito potrà essere trasferito integralmente o rimborsato.',
+      'Il saldo restante dovrà essere corrisposto prima dell’inizio della consulenza.',
+    ],
+
+    finalNotice:
+      'L’appuntamento sarà ufficialmente confermato esclusivamente dopo la verifica della ricevuta e l’invio di una seconda comunicazione da parte della Segreteria Generale.',
+
     reply:
       'Per qualsiasi ulteriore chiarimento, può rispondere direttamente a questa comunicazione.',
-    regards: 'Con la nostra più alta considerazione',
+
+    regards:
+      'Con la nostra più alta considerazione',
+
     transaction:
       'Questa comunicazione è stata generata a seguito di una richiesta effettuata tramite il sito ufficiale di Casa Bernocchi.',
   },
 
   en: {
     htmlLanguage: 'en',
+
     subject:
-      'We have received your appointment request — Bernocchi Health',
-    eyebrow: 'Institutional confirmation',
-    title: 'Your request has been received',
+      'Provisional appointment reservation — Deposit pending',
+
+    eyebrow:
+      'Institutional confirmation',
+
+    title:
+      'Your request has been received',
+
     greeting: (name: string) =>
       `Dear ${name},`,
+
     introduction:
-      'Thank you for placing your trust in Bernocchi Health. The Segreteria Generale has received your request and will review availability with the utmost discretion.',
+      'Thank you for placing your trust in Bernocchi Health. The Segreteria Generale has received your request and registered the following appointment details.',
+
     labels: {
       consultation: 'Consultation',
       mode: 'Mode',
-      date: 'Preferred date',
-      time: 'Preferred time',
+      date: 'Requested date',
+      time: 'Requested time',
       language: 'Preferred language',
     },
-    notice:
-      'The date and time shown constitute a request. The appointment will be confirmed only when the Segreteria Generale contacts you. No payment has been taken.',
+
+    reservationTitle:
+      'Provisional reservation',
+
+    reservationNotice:
+      'The selected date and time constitute a provisional reservation. The appointment will be confirmed only after the Segreteria Generale verifies the reservation deposit.',
+
+    paymentEyebrow:
+      'SINPE Móvil',
+
+    paymentTitle:
+      'Reservation deposit',
+
+    paymentAmount:
+      '₡25,000 CRC',
+
+    paymentExplanation:
+      'This is a fixed reservation deposit and does not represent a percentage of the consultation price. It will be credited toward the final amount, which is expressed in United States dollars.',
+
+    paymentNumberLabel:
+      'SINPE Móvil number',
+
+    paymentNumber:
+      '+506 8370-3939',
+
+    paymentHolderLabel:
+      'Account holder',
+
+    paymentHolder:
+      'Sociedad de Responsabilidad Limitada',
+
+    legalIdLabel:
+      'Legal identification',
+
+    legalId:
+      '3-102-888680',
+
+    receiptTitle:
+      'Sending your receipt',
+
+    receiptText:
+      'After completing the deposit, send the receipt through WhatsApp or reply directly to this email. Please include the full name of the person requesting the appointment.',
+
+    whatsappButton:
+      'Send receipt through WhatsApp',
+
+    policiesTitle:
+      'Reservation conditions',
+
+    policies: [
+      'The time slot will remain provisionally reserved for 30 minutes. If the receipt is not received within that period, the slot may become available again.',
+      'One rescheduling is permitted without penalty when requested at least 24 hours in advance, subject to availability and within the following 30 days.',
+      'Cancellations made with less than 24 hours’ notice and missed appointments result in the loss of the reservation deposit.',
+      'The consultation will end at the originally scheduled time. A delay exceeding 20 minutes may be considered a missed appointment.',
+      'When Bernocchi Health must modify or cancel the appointment, the deposit may be transferred in full or refunded.',
+      'The remaining balance must be paid before the consultation begins.',
+    ],
+
+    finalNotice:
+      'The appointment will be officially confirmed only after the Segreteria Generale verifies the receipt and sends a second confirmation email.',
+
     reply:
       'For any further clarification, you may reply directly to this email.',
-    regards: 'With our highest consideration',
+
+    regards:
+      'With our highest consideration',
+
     transaction:
       'This communication was generated following a request submitted through the official Casa Bernocchi website.',
   },
@@ -224,16 +437,52 @@ function renderDetails(
     .join('')
 }
 
-function renderPremiumEmail({
+function renderPolicies(
+  policies: readonly string[],
+): string {
+  return policies
+    .map(
+      (policy, index) => `
+        <tr>
+          <td
+            width="28"
+            valign="top"
+            style="
+              padding:0 10px 15px 0;
+              color:#b9964a;
+              font-family:Georgia, 'Times New Roman', serif;
+              font-size:16px;
+              line-height:1.6;
+            "
+          >
+            ${String(index + 1).padStart(2, '0')}
+          </td>
+
+          <td
+            class="policy-text"
+            valign="top"
+            style="
+              padding:0 0 15px;
+              color:#4a4f58;
+              font-family:Arial, Helvetica, sans-serif;
+              font-size:12px;
+              line-height:1.7;
+            "
+          >
+            ${escapeHtml(policy)}
+          </td>
+        </tr>
+      `,
+    )
+    .join('')
+}
+
+function renderPremiumShell({
   htmlLanguage,
   preheader,
   eyebrow,
   title,
-  greeting,
-  introduction,
-  details,
-  notice,
-  reply,
+  bodyHtml,
   regards,
   transaction,
 }: {
@@ -241,103 +490,25 @@ function renderPremiumEmail({
   preheader: string
   eyebrow: string
   title: string
-  greeting: string
-  introduction: string
-  details?: DetailRow[]
-  notice?: string
-  reply?: string
+  bodyHtml: string
   regards: string
   transaction: string
 }): string {
-  const detailTable =
-    details && details.length > 0
-      ? `
-        <table
-          role="presentation"
-          width="100%"
-          cellspacing="0"
-          cellpadding="0"
-          border="0"
-          class="detail-table"
-          style="
-            width:100%;
-            margin:27px 0;
-            border:1px solid #d9cebb;
-            border-collapse:separate;
-            border-spacing:0;
-            border-radius:4px;
-            background:#faf7f0;
-          "
-        >
-          ${renderDetails(details)}
-        </table>
-      `
-      : ''
-
-  const noticeBox = notice
-    ? `
-      <table
-        role="presentation"
-        width="100%"
-        cellspacing="0"
-        cellpadding="0"
-        border="0"
-        class="notice-box"
-        style="
-          width:100%;
-          margin:27px 0 22px;
-          border:1px solid #ddcfb5;
-          border-left:3px solid #b9964a;
-          background:#f7f2e8;
-        "
-      >
-        <tr>
-          <td
-            class="notice-text"
-            style="
-              padding:18px 20px;
-              color:#4e4b45;
-              font-family:Arial, Helvetica, sans-serif;
-              font-size:13px;
-              line-height:1.7;
-            "
-          >
-            ${escapeHtml(notice)}
-          </td>
-        </tr>
-      </table>
-    `
-    : ''
-
-  const replyParagraph = reply
-    ? `
-      <p
-        class="body-copy"
-        style="
-          margin:20px 0 0;
-          color:#343b46;
-          font-family:Georgia, 'Times New Roman', serif;
-          font-size:15px;
-          line-height:1.75;
-        "
-      >
-        ${escapeHtml(reply)}
-      </p>
-    `
-    : ''
-
   return `<!doctype html>
 <html lang="${escapeHtml(htmlLanguage)}">
 <head>
   <meta charset="utf-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1"
   >
+
   <meta
     name="color-scheme"
     content="light dark"
   >
+
   <meta
     name="supported-color-schemes"
     content="light dark"
@@ -364,6 +535,10 @@ function renderPremiumEmail({
     img {
       border: 0;
       display: block;
+    }
+
+    a {
+      text-decoration: none;
     }
 
     @media only screen and (max-width: 620px) {
@@ -403,6 +578,15 @@ function renderPremiumEmail({
       .detail-value {
         padding-top: 2px !important;
       }
+
+      .payment-amount {
+        font-size: 29px !important;
+      }
+
+      .button-cell {
+        display: block !important;
+        width: 100% !important;
+      }
     }
 
     @media (prefers-color-scheme: dark) {
@@ -420,13 +604,14 @@ function renderPremiumEmail({
       .email-title,
       .body-copy,
       .detail-value,
-      .signature-name {
+      .signature-name,
+      .section-title {
         color: #f3efe5 !important;
       }
 
       .detail-table,
       .notice-box,
-      .signature-box {
+      .policy-box {
         background-color: #151e2a !important;
         border-color: #3a4657 !important;
       }
@@ -441,6 +626,7 @@ function renderPremiumEmail({
       }
 
       .notice-text,
+      .policy-text,
       .muted-copy {
         color: #c1b9aa !important;
       }
@@ -600,46 +786,18 @@ function renderPremiumEmail({
                 ${escapeHtml(title)}
               </h1>
 
-              <p
-                class="body-copy"
-                style="
-                  margin:0 0 15px;
-                  color:#28313e;
-                  font-family:Georgia, 'Times New Roman', serif;
-                  font-size:17px;
-                  line-height:1.7;
-                "
-              >
-                ${escapeHtml(greeting)}
-              </p>
+              ${bodyHtml}
 
-              <p
-                class="body-copy"
-                style="
-                  margin:0;
-                  color:#343b46;
-                  font-family:Georgia, 'Times New Roman', serif;
-                  font-size:15px;
-                  line-height:1.8;
-                "
-              >
-                ${escapeHtml(introduction)}
-              </p>
-
-              ${detailTable}
-              ${noticeBox}
-              ${replyParagraph}
-
+              <!-- SIGNATURE -->
               <table
                 role="presentation"
                 width="100%"
                 cellspacing="0"
                 cellpadding="0"
                 border="0"
-                class="signature-box"
                 style="
                   width:100%;
-                  margin-top:31px;
+                  margin-top:32px;
                   border-top:1px solid #ded4c3;
                 "
               >
@@ -749,11 +907,509 @@ function renderPremiumEmail({
 </html>`
 }
 
+function renderAppointmentBody(
+  data: AppointmentConfirmationData,
+  language: EmailLanguage,
+): string {
+  const copy = confirmationCopy[language]
+
+  const details: DetailRow[] = [
+    {
+      label: copy.labels.consultation,
+      value: data.consultation,
+    },
+    {
+      label: copy.labels.mode,
+      value: data.mode,
+    },
+    {
+      label: copy.labels.date,
+      value: data.date,
+    },
+    {
+      label: copy.labels.time,
+      value: data.time,
+    },
+    {
+      label: copy.labels.language,
+      value: data.language || '—',
+    },
+  ]
+
+  return `
+    <p
+      class="body-copy"
+      style="
+        margin:0 0 15px;
+        color:#28313e;
+        font-family:Georgia, 'Times New Roman', serif;
+        font-size:17px;
+        line-height:1.7;
+      "
+    >
+      ${escapeHtml(copy.greeting(data.fullName))}
+    </p>
+
+    <p
+      class="body-copy"
+      style="
+        margin:0;
+        color:#343b46;
+        font-family:Georgia, 'Times New Roman', serif;
+        font-size:15px;
+        line-height:1.8;
+      "
+    >
+      ${escapeHtml(copy.introduction)}
+    </p>
+
+    <!-- APPOINTMENT DETAILS -->
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      class="detail-table"
+      style="
+        width:100%;
+        margin:27px 0;
+        border:1px solid #d9cebb;
+        border-collapse:separate;
+        border-spacing:0;
+        border-radius:4px;
+        background:#faf7f0;
+      "
+    >
+      ${renderDetails(details)}
+    </table>
+
+    <!-- PROVISIONAL RESERVATION -->
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      class="notice-box"
+      style="
+        width:100%;
+        margin:27px 0;
+        border:1px solid #ddcfb5;
+        border-left:3px solid #b9964a;
+        background:#f7f2e8;
+      "
+    >
+      <tr>
+        <td style="padding:20px 22px;">
+          <div
+            class="section-title"
+            style="
+              color:#172235;
+              font-family:Georgia, 'Times New Roman', serif;
+              font-size:19px;
+              line-height:1.4;
+            "
+          >
+            ${escapeHtml(copy.reservationTitle)}
+          </div>
+
+          <div
+            class="notice-text"
+            style="
+              margin-top:8px;
+              color:#4e4b45;
+              font-family:Arial, Helvetica, sans-serif;
+              font-size:13px;
+              line-height:1.75;
+            "
+          >
+            ${escapeHtml(copy.reservationNotice)}
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- SINPE PAYMENT -->
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      style="
+        width:100%;
+        margin:30px 0;
+        border-collapse:separate;
+        border-spacing:0;
+        background:#07131f;
+        border:1px solid #b9964a;
+        border-radius:5px;
+        overflow:hidden;
+      "
+    >
+      <tr>
+        <td
+          align="center"
+          style="
+            padding:25px 24px 11px;
+          "
+        >
+          <div
+            style="
+              display:inline-block;
+              min-width:28px;
+              height:28px;
+              padding:0 7px;
+              border:1px solid #c6a45d;
+              border-radius:50%;
+              color:#d0ad65;
+              font-family:Georgia, 'Times New Roman', serif;
+              font-size:17px;
+              line-height:28px;
+              text-align:center;
+            "
+          >
+            ₡
+          </div>
+
+          <div
+            style="
+              margin-top:12px;
+              color:#c6a45d;
+              font-family:Arial, Helvetica, sans-serif;
+              font-size:10px;
+              font-weight:700;
+              letter-spacing:2.4px;
+              text-transform:uppercase;
+            "
+          >
+            ${escapeHtml(copy.paymentEyebrow)}
+          </div>
+
+          <div
+            style="
+              margin-top:8px;
+              color:#f3efe5;
+              font-family:Georgia, 'Times New Roman', serif;
+              font-size:21px;
+              line-height:1.4;
+            "
+          >
+            ${escapeHtml(copy.paymentTitle)}
+          </div>
+
+          <div
+            class="payment-amount"
+            style="
+              margin-top:10px;
+              color:#d0ad65;
+              font-family:Georgia, 'Times New Roman', serif;
+              font-size:35px;
+              line-height:1.25;
+            "
+          >
+            ${escapeHtml(copy.paymentAmount)}
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td
+          style="
+            padding:12px 27px 24px;
+          "
+        >
+          <div
+            style="
+              color:#c1c8d0;
+              font-family:Arial, Helvetica, sans-serif;
+              font-size:12px;
+              line-height:1.75;
+              text-align:center;
+            "
+          >
+            ${escapeHtml(copy.paymentExplanation)}
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td
+          style="
+            padding:0 27px 25px;
+          "
+        >
+          <table
+            role="presentation"
+            width="100%"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            style="
+              width:100%;
+              border-top:1px solid #33404e;
+            "
+          >
+            <tr>
+              <td
+                style="
+                  padding:14px 0 5px;
+                  color:#c6a45d;
+                  font-family:Arial, Helvetica, sans-serif;
+                  font-size:9px;
+                  font-weight:700;
+                  letter-spacing:1.2px;
+                  text-transform:uppercase;
+                "
+              >
+                ${escapeHtml(copy.paymentNumberLabel)}
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  padding:0 0 12px;
+                  color:#f3efe5;
+                  font-family:Arial, Helvetica, sans-serif;
+                  font-size:16px;
+                  line-height:1.5;
+                "
+              >
+                ${escapeHtml(copy.paymentNumber)}
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  padding:12px 0 5px;
+                  border-top:1px solid #33404e;
+                  color:#c6a45d;
+                  font-family:Arial, Helvetica, sans-serif;
+                  font-size:9px;
+                  font-weight:700;
+                  letter-spacing:1.2px;
+                  text-transform:uppercase;
+                "
+              >
+                ${escapeHtml(copy.paymentHolderLabel)}
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  padding:0 0 12px;
+                  color:#f3efe5;
+                  font-family:Arial, Helvetica, sans-serif;
+                  font-size:14px;
+                  line-height:1.5;
+                "
+              >
+                ${escapeHtml(copy.paymentHolder)}
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  padding:12px 0 5px;
+                  border-top:1px solid #33404e;
+                  color:#c6a45d;
+                  font-family:Arial, Helvetica, sans-serif;
+                  font-size:9px;
+                  font-weight:700;
+                  letter-spacing:1.2px;
+                  text-transform:uppercase;
+                "
+              >
+                ${escapeHtml(copy.legalIdLabel)}
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  padding:0;
+                  color:#f3efe5;
+                  font-family:Arial, Helvetica, sans-serif;
+                  font-size:14px;
+                  line-height:1.5;
+                "
+              >
+                ${escapeHtml(copy.legalId)}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <!-- RECEIPT -->
+    <div
+      class="section-title"
+      style="
+        margin-top:29px;
+        color:#172235;
+        font-family:Georgia, 'Times New Roman', serif;
+        font-size:21px;
+        line-height:1.4;
+      "
+    >
+      ${escapeHtml(copy.receiptTitle)}
+    </div>
+
+    <p
+      class="body-copy"
+      style="
+        margin:10px 0 20px;
+        color:#4a4f58;
+        font-family:Arial, Helvetica, sans-serif;
+        font-size:13px;
+        line-height:1.75;
+      "
+    >
+      ${escapeHtml(copy.receiptText)}
+    </p>
+
+    <table
+      role="presentation"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      style="margin:0 0 31px;"
+    >
+      <tr>
+        <td
+          align="center"
+          bgcolor="#B9964A"
+          style="
+            border-radius:3px;
+            background:#b9964a;
+          "
+        >
+          <a
+            href="${WHATSAPP_RECEIPT_URL}"
+            target="_blank"
+            style="
+              display:inline-block;
+              padding:13px 21px;
+              color:#07131f;
+              font-family:Arial, Helvetica, sans-serif;
+              font-size:11px;
+              font-weight:700;
+              line-height:1.4;
+              letter-spacing:0.7px;
+              text-transform:uppercase;
+            "
+          >
+            ${escapeHtml(copy.whatsappButton)}
+          </a>
+        </td>
+      </tr>
+    </table>
+
+    <!-- POLICIES -->
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      class="policy-box"
+      style="
+        width:100%;
+        margin:26px 0;
+        border:1px solid #d9cebb;
+        background:#faf7f0;
+      "
+    >
+      <tr>
+        <td style="padding:23px 22px 8px;">
+          <div
+            class="section-title"
+            style="
+              color:#172235;
+              font-family:Georgia, 'Times New Roman', serif;
+              font-size:21px;
+              line-height:1.4;
+            "
+          >
+            ${escapeHtml(copy.policiesTitle)}
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding:13px 22px 9px;">
+          <table
+            role="presentation"
+            width="100%"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+          >
+            ${renderPolicies(copy.policies)}
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <!-- FINAL CONFIRMATION NOTICE -->
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      class="notice-box"
+      style="
+        width:100%;
+        margin:26px 0 21px;
+        border:1px solid #ddcfb5;
+        border-left:3px solid #b9964a;
+        background:#f7f2e8;
+      "
+    >
+      <tr>
+        <td
+          class="notice-text"
+          style="
+            padding:18px 20px;
+            color:#4e4b45;
+            font-family:Arial, Helvetica, sans-serif;
+            font-size:13px;
+            font-weight:600;
+            line-height:1.75;
+          "
+        >
+          ${escapeHtml(copy.finalNotice)}
+        </td>
+      </tr>
+    </table>
+
+    <p
+      class="body-copy"
+      style="
+        margin:20px 0 0;
+        color:#343b46;
+        font-family:Georgia, 'Times New Roman', serif;
+        font-size:15px;
+        line-height:1.75;
+      "
+    >
+      ${escapeHtml(copy.reply)}
+    </p>
+  `
+}
+
 function renderGenericEmail(
   subject: string,
   text: string,
 ): string {
-  const paragraphs = text
+  const bodyHtml = text
     .split(/\n{2,}/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean)
@@ -775,20 +1431,16 @@ function renderGenericEmail(
     )
     .join('')
 
-  return renderPremiumEmail({
+  return renderPremiumShell({
     htmlLanguage: 'en',
     preheader: subject,
     eyebrow: 'Comunicazione istituzionale',
     title: subject,
-    greeting: 'Segreteria Generale',
-    introduction: '',
+    bodyHtml,
     regards: 'Con i nostri riguardi',
     transaction:
       'This transactional communication was generated following a request submitted through the official Casa Bernocchi website.',
-  }).replace(
-    '<p\n                class="body-copy"\n                style="\n                  margin:0;\n                  color:#343b46;\n                  font-family:Georgia, \'Times New Roman\', serif;\n                  font-size:15px;\n                  line-height:1.8;\n                "\n              >\n                \n              </p>',
-    paragraphs,
-  )
+  })
 }
 
 /**
@@ -822,7 +1474,27 @@ export function buildAppointmentConfirmationText(
     `${copy.labels.time}: ${data.time}`,
     `${copy.labels.language}: ${data.language || '—'}`,
     '',
-    copy.notice,
+    copy.reservationTitle,
+    copy.reservationNotice,
+    '',
+    copy.paymentTitle,
+    copy.paymentAmount,
+    `${copy.paymentNumberLabel}: ${copy.paymentNumber}`,
+    `${copy.paymentHolderLabel}: ${copy.paymentHolder}`,
+    `${copy.legalIdLabel}: ${copy.legalId}`,
+    '',
+    copy.paymentExplanation,
+    '',
+    copy.receiptTitle,
+    copy.receiptText,
+    `WhatsApp: ${copy.paymentNumber}`,
+    '',
+    copy.policiesTitle,
+    ...copy.policies.map(
+      (policy, index) => `${index + 1}. ${policy}`,
+    ),
+    '',
+    copy.finalNotice,
     '',
     copy.reply,
     '',
@@ -842,37 +1514,12 @@ export function buildAppointmentConfirmationEmail(
   const language = resolveLanguage(data.language)
   const copy = confirmationCopy[language]
 
-  return renderPremiumEmail({
+  return renderPremiumShell({
     htmlLanguage: copy.htmlLanguage,
     preheader: copy.subject,
     eyebrow: copy.eyebrow,
     title: copy.title,
-    greeting: copy.greeting(data.fullName),
-    introduction: copy.introduction,
-    details: [
-      {
-        label: copy.labels.consultation,
-        value: data.consultation,
-      },
-      {
-        label: copy.labels.mode,
-        value: data.mode,
-      },
-      {
-        label: copy.labels.date,
-        value: data.date,
-      },
-      {
-        label: copy.labels.time,
-        value: data.time,
-      },
-      {
-        label: copy.labels.language,
-        value: data.language || '—',
-      },
-    ],
-    notice: copy.notice,
-    reply: copy.reply,
+    bodyHtml: renderAppointmentBody(data, language),
     regards: copy.regards,
     transaction: copy.transaction,
   })
