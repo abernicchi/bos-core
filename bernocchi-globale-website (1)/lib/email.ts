@@ -1,4 +1,4 @@
-import { site } from '@/lib/content'
+import { site } from './content.ts'
 
 /**
  * CASA BERNOCCHI — PREMIUM EMAIL SYSTEM
@@ -51,6 +51,10 @@ type AppointmentConfirmationData = {
   date: string
   time: string
   language: string
+}
+
+export type ConfirmedAppointmentData = AppointmentConfirmationData & {
+  meetUrl?: string
 }
 
 type DetailRow = {
@@ -1523,6 +1527,36 @@ export function buildAppointmentConfirmationEmail(
     regards: copy.regards,
     transaction: copy.transaction,
   })
+}
+
+const confirmedCopy = {
+  es: { subject: 'Cita confirmada — Bernocchi Health', eyebrow: 'Confirmación definitiva', title: 'Su cita ha sido confirmada', greeting: (name: string) => `Estimado/a ${name},`, body: 'La Segreteria Generale verificó el depósito de ₡25.000 CRC, acreditado íntegramente al importe final de la consulta. Los honorarios profesionales se expresan en USD.', meet: 'Acceder a la consulta virtual', labels: ['Consulta','Modalidad','Fecha','Hora','Idioma'], regards: 'Con nuestra más alta consideración', transaction: 'Confirmación definitiva emitida por Casa Bernocchi.' },
+  en: { subject: 'Appointment confirmed — Bernocchi Health', eyebrow: 'Final confirmation', title: 'Your appointment is confirmed', greeting: (name: string) => `Dear ${name},`, body: 'The Segreteria Generale verified the ₡25,000 CRC deposit, credited in full toward the final consultation amount. Professional fees are expressed in USD.', meet: 'Join the virtual consultation', labels: ['Consultation','Mode','Date','Time','Language'], regards: 'With our highest consideration', transaction: 'Final confirmation issued by Casa Bernocchi.' },
+  it: { subject: 'Appuntamento confermato — Bernocchi Health', eyebrow: 'Conferma definitiva', title: 'Il Suo appuntamento è confermato', greeting: (name: string) => `Gentile ${name},`, body: 'La Segreteria Generale ha verificato il deposito di ₡25.000 CRC, interamente accreditato all’importo finale della consulenza. Gli onorari professionali sono espressi in USD.', meet: 'Accedere alla consulenza virtuale', labels: ['Consulenza','Modalità','Data','Ora','Lingua'], regards: 'Con la nostra più alta considerazione', transaction: 'Conferma definitiva emessa da Casa Bernocchi.' },
+} as const
+
+export function getConfirmedAppointmentSubject(language: string) {
+  return confirmedCopy[resolveLanguage(language)].subject
+}
+
+export function buildConfirmedAppointmentText(data: ConfirmedAppointmentData) {
+  const copy = confirmedCopy[resolveLanguage(data.language)]
+  return [copy.greeting(data.fullName), '', copy.body, '', `${copy.labels[0]}: ${data.consultation}`, `${copy.labels[1]}: ${data.mode}`, `${copy.labels[2]}: ${data.date}`, `${copy.labels[3]}: ${data.time}`, `${copy.labels[4]}: ${data.language}`, ...(data.meetUrl ? ['', `${copy.meet}: ${data.meetUrl}`] : []), '', copy.regards, 'Segreteria Generale', 'Casa Bernocchi'].join('\n')
+}
+
+export function buildConfirmedAppointmentEmail(data: ConfirmedAppointmentData) {
+  const language = resolveLanguage(data.language); const copy = confirmedCopy[language]
+  const provisional = confirmationCopy[language]
+  const details = [
+    { label: provisional.labels.consultation, value: data.consultation },
+    { label: provisional.labels.mode, value: data.mode },
+    { label: provisional.labels.date, value: data.date },
+    { label: provisional.labels.time, value: data.time },
+    { label: provisional.labels.language, value: data.language },
+  ]
+  const meet = data.meetUrl ? `<p style="margin:26px 0;text-align:center"><a href="${escapeHtml(data.meetUrl)}" style="display:inline-block;background:#B9964A;color:#07131F;padding:14px 24px;border-radius:3px;font-family:Arial,Helvetica,sans-serif;font-weight:700">${escapeHtml(copy.meet)}</a></p>` : ''
+  const bodyHtml = `<p class="body-copy" style="color:#28313e;font-family:Georgia,'Times New Roman',serif;font-size:17px;line-height:1.7">${escapeHtml(copy.greeting(data.fullName))}</p><p class="body-copy" style="color:#343b46;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.8">${escapeHtml(copy.body)}</p><table role="presentation" width="100%" class="detail-table" style="width:100%;margin:27px 0;border:1px solid #d9cebb;border-collapse:separate;background:#faf7f0">${renderDetails(details)}</table>${meet}`
+  return renderPremiumShell({ htmlLanguage: language, preheader: copy.subject, eyebrow: copy.eyebrow, title: copy.title, bodyHtml, regards: copy.regards, transaction: copy.transaction })
 }
 
 export async function sendEmail({

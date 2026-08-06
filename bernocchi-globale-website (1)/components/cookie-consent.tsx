@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 /**
  * Minimal cookie-consent structure. No invasive tracking runs by default.
- * Only Vercel Analytics (anonymous, cookieless) is used in production.
+ * Only anonymous, cookieless analytics are used in production.
  * TODO: gate any future non-essential cookies behind an "accepted" consent.
  */
 const STORAGE_KEY = 'cb-cookie-consent'

@@ -1,7 +1,8 @@
 import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata, Viewport } from 'next'
-import { Cormorant_Garamond, Inter } from 'next/font/google'
+import { cookies, headers } from 'next/headers'
+import { detectLocale, dictionaries } from '@/lib/i18n'
 import { site, healthServices } from '@/lib/content'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
@@ -10,22 +11,9 @@ import { WhatsAppFloat } from '@/components/whatsapp-float'
 import { Analytics, GtmNoScript } from '@/components/analytics'
 import './globals.css'
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-})
-
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-cormorant',
-  display: 'swap',
-})
-
 const searchConsole = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
     default: `${site.name} — Italian excellence, built to endure`,
@@ -80,14 +68,23 @@ export const metadata: Metadata = {
   },
 }
 
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = detectLocale((await cookies()).get('cb-lang')?.value, (await headers()).get('accept-language'))
+  const copy = dictionaries[locale]
+  return { ...baseMetadata, title: { default: `${site.name} — ${copy.metaTitle}`, template: `%s — ${site.name}` }, description: copy.metaDescription, openGraph: { ...baseMetadata.openGraph, locale: locale === 'es' ? 'es_CR' : locale === 'it' ? 'it_IT' : 'en_GB', title: `${site.name} — ${copy.metaTitle}`, description: copy.metaDescription } }
+}
+
 export const viewport: Viewport = {
   colorScheme: 'light',
   themeColor: '#07131f',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = detectLocale((await cookies()).get('cb-lang')?.value, (await headers()).get('accept-language'))
+
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -134,8 +131,8 @@ export default function RootLayout({
 
   return (
     <html
-      lang="en"
-      className={`${inter.variable} ${cormorant.variable} bg-background`}
+      lang={locale}
+      className="bg-background"
     >
       <body>
         <GtmNoScript />
@@ -145,7 +142,7 @@ export default function RootLayout({
             __html: JSON.stringify(organizationSchema),
           }}
         />
-        <SiteHeader />
+        <SiteHeader locale={locale} />
         <main id="main">{children}</main>
         <SiteFooter />
         <WhatsAppFloat />

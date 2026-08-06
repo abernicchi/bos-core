@@ -8,8 +8,10 @@ import { navigation, site } from '@/lib/content'
 import { Monogram } from '@/components/monogram'
 import { LanguageSelector } from '@/components/language-selector'
 import { cn } from '@/lib/utils'
+import { dictionaries, type Locale } from '@/lib/i18n'
 
-export function SiteHeader() {
+export function SiteHeader({ locale }: { locale: Locale }) {
+  const copy = dictionaries[locale]
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -38,7 +40,7 @@ export function SiteHeader() {
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-sm focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
       >
-        Skip to content
+        {copy.skip}
       </a>
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4 lg:px-10">
         <Link
@@ -59,7 +61,7 @@ export function SiteHeader() {
 
         <nav
           className="hidden items-center gap-7 lg:flex"
-          aria-label="Primary navigation"
+          aria-label={copy.primary}
         >
           {navigation.map((item) => {
             const active =
@@ -73,7 +75,7 @@ export function SiteHeader() {
                   active ? 'text-gold' : 'text-foreground/80',
                 )}
               >
-                {item.label}
+                {copy.nav[navigation.indexOf(item)]}
               </Link>
             )
           })}
@@ -85,13 +87,13 @@ export function SiteHeader() {
             href="/health#book"
             className="hidden rounded-sm bg-gold px-4 py-2 text-sm font-medium text-navy transition-colors hover:bg-gold/90 md:inline-flex"
           >
-            Book a Consultation
+            {copy.book}
           </Link>
           <button
             type="button"
             className="inline-flex size-9 items-center justify-center rounded-sm border border-border text-foreground lg:hidden"
             onClick={() => setMobileOpen((v) => !v)}
-            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-label={mobileOpen ? copy.close : copy.open}
             aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -103,7 +105,7 @@ export function SiteHeader() {
         <div className="border-t border-border bg-background lg:hidden">
           <nav
             className="mx-auto flex max-w-7xl flex-col px-6 py-4"
-            aria-label="Mobile navigation"
+            aria-label={copy.mobile}
           >
             {navigation.map((item) => (
               <Link
@@ -111,7 +113,7 @@ export function SiteHeader() {
                 href={item.href}
                 className="border-b border-border/60 py-3 text-base text-foreground last:border-0"
               >
-                {item.label}
+                {copy.nav[navigation.indexOf(item)]}
               </Link>
             ))}
             <div className="flex items-center justify-between pt-4">
@@ -120,7 +122,7 @@ export function SiteHeader() {
                 href="/health#book"
                 className="rounded-sm bg-gold px-4 py-2 text-sm font-medium text-navy"
               >
-                Book a Consultation
+                {copy.book}
               </Link>
             </div>
           </nav>

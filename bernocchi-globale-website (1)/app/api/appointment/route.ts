@@ -6,6 +6,11 @@ import {
   sendEmail,
   SEGRETERIA_RECIPIENT,
 } from '@/lib/email'
+import { consultationDuration, costaRicaDateTime, validBookingDate } from '@/lib/booking'
+import { CalendarConflictError, createPending, deleteEvent, eventBlocksSlot, listEvents } from '@/lib/google-calendar'
+import { ReservationConflictError, reserveAtomic, updateReservation } from '@/lib/booking-store'
+import { createAdminToken } from '@/lib/admin-token'
+import { bookingTimeSlots, consultationModes, consultationTypes, languages } from '@/lib/content'
 
 /**
  * Appointment-request endpoint for Bernocchi Health.
@@ -56,17 +61,26 @@ export async function POST(request: Request) {
   const language = clean(payload.language, 40)
   const date = clean(payload.date, 40)
   const time = clean(payload.time, 40)
+  const consultationId = clean(payload.consultationId, 80)
+  const acceptedTerms = payload.acceptedTerms === true
+  const duration = consultationDuration(consultationId)
+  const canonicalConsultation = consultationTypes.find((item) => item.id === consultationId)
+  const canonicalMode = consultationModes.find((item) => item.value === mode || item.label === mode)
+  const canonicalLanguage = languages.find((item) => item.value === language || item.label === language)
 
   const errors: string[] = []
 
-  if (!consultation) errors.push('consultation')
-  if (!mode) errors.push('mode')
+  if (!consultation || !canonicalConsultation || consultation !== canonicalConsultation.name || !duration) errors.push('consultation')
+  if (!canonicalMode) errors.push('mode')
   if (!fullName) errors.push('fullName')
   if (!EMAIL_RE.test(email)) errors.push('email')
   if (!whatsapp) errors.push('whatsapp')
   if (!country) errors.push('country')
   if (!date) errors.push('date')
-  if (!time) errors.push('time')
+  if (!bookingTimeSlots.includes(time)) errors.push('time')
+  if (!canonicalLanguage) errors.push('language')
+  if (!acceptedTerms) errors.push('acceptedTerms')
+  if (!validBookingDate(date) || Number.isNaN(costaRicaDateTime(date, time).valueOf())) errors.push('date')
 
   if (errors.length > 0) {
     return NextResponse.json(
@@ -77,6 +91,32 @@ export async function POST(request: Request) {
       { status: 422 },
     )
   }
+
+  const start = costaRicaDateTime(date, time)
+  const end = new Date(start.valueOf() + duration! * 60_000)
+  let hold: { id: string; holdExpiresAt: string }
+  let reservationId: string | undefined
+  let googleEventId: string | undefined
+  try {
+    const before = await listEvents(start, end)
+    if (before.some((event) => eventBlocksSlot(event, start, end))) return NextResponse.json({ error: 'Slot unavailable.' }, { status: 409 })
+    const holdExpiresAt = new Date(Date.now() + 30 * 60_000).toISOString()
+    const reservation = await reserveAtomic({ consultationId, consultation, mode: canonicalMode!.value, language: canonicalLanguage!.value, patientName: fullName, patientEmail: email, patientWhatsapp: whatsapp, startAt: start.toISOString(), endAt: end.toISOString(), holdExpiresAt })
+    reservationId = reservation.id
+    const after = await listEvents(start, end)
+    if (after.some((event) => eventBlocksSlot(event, start, end))) { await updateReservation(reservation.id, { status: 'released' }); return NextResponse.json({ error: 'Slot unavailable.' }, { status: 409 }) }
+    hold = await createPending({ bookingId: reservation.id, date, time, duration: duration!, consultation, consultationId, patientName: fullName, patientEmail: email, patientWhatsapp: whatsapp, language: canonicalLanguage!.value, mode: canonicalMode!.value, holdExpiresAt })
+    googleEventId = hold.id
+    await updateReservation(reservation.id, { google_event_id: hold.id })
+  } catch (error) {
+    if (googleEventId) await deleteEvent(googleEventId).catch(() => undefined)
+    if (reservationId) await updateReservation(reservationId, { status: 'failed' }).catch(() => undefined)
+    if (error instanceof CalendarConflictError || error instanceof ReservationConflictError) return NextResponse.json({ error: 'Slot unavailable.' }, { status: 409 })
+    return NextResponse.json({ error: 'Calendar temporarily unavailable.' }, { status: 503 })
+  }
+
+  const reviewToken = createAdminToken(hold.id, new Date(Date.now() + 48 * 60 * 60_000))
+  const reviewUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bernocchiglobale.it'}/admin/bookings/${encodeURIComponent(reviewToken)}`
 
   /*
    * Internal message received by Segreteria Generale.
@@ -94,6 +134,9 @@ export async function POST(request: Request) {
     `Email: ${email}`,
     `WhatsApp: ${whatsapp}`,
     `Country: ${country}`,
+    `Booking identifier: ${hold.id}`,
+    `Provisional hold expires: ${hold.holdExpiresAt}`,
+    `Secure review: ${reviewUrl}`,
     '',
     'Note: no clinical information is collected through the website.',
   ].join('\n')
@@ -106,6 +149,8 @@ export async function POST(request: Request) {
   })
 
   if (notifySegreteria.status === 'error') {
+    await deleteEvent(hold.id).catch(() => undefined)
+    if (reservationId) await updateReservation(reservationId, { status: 'failed' }).catch(() => undefined)
     console.error(
       '[Casa Bernocchi] Appointment delivery failed:',
       notifySegreteria.detail,
@@ -122,7 +167,7 @@ export async function POST(request: Request) {
       '[Casa Bernocchi] Appointment received without email delivery.',
       {
         recipient: SEGRETERIA_RECIPIENT,
-        summary: internalSummary,
+        bookingId: hold.id,
       },
     )
   }
@@ -168,7 +213,7 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json(
-    { ok: true },
+    { ok: true, bookingId: hold.id, holdExpiresAt: hold.holdExpiresAt },
     { status: 200 },
   )
 }

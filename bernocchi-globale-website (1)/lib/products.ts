@@ -5,7 +5,7 @@ export interface Product {
   name: string
   description: string
   priceInCents: number
-  currency: 'eur'
+  currency: 'usd'
 }
 
 /**
