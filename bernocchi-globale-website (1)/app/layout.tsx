@@ -1,6 +1,8 @@
 import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata, Viewport } from 'next'
+import { cookies, headers } from 'next/headers'
+import { detectLocale } from '@/lib/i18n'
 import { site, healthServices } from '@/lib/content'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
@@ -71,9 +73,11 @@ export const viewport: Viewport = {
   themeColor: '#07131f',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = detectLocale((await cookies()).get('cb-lang')?.value, (await headers()).get('accept-language'))
+
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -120,7 +124,7 @@ export default function RootLayout({
 
   return (
     <html
-      lang="en"
+      lang={locale}
       className="bg-background"
     >
       <body>
@@ -131,7 +135,7 @@ export default function RootLayout({
             __html: JSON.stringify(organizationSchema),
           }}
         />
-        <SiteHeader />
+        <SiteHeader locale={locale} />
         <main id="main">{children}</main>
         <SiteFooter />
         <WhatsAppFloat />

@@ -1,4 +1,4 @@
-import { bookingTimeSlots, consultationTypes } from './content.ts'
+import { bookingTimeSlots, consultationModes, consultationTypes, languages } from './content.ts'
 
 export const CALENDAR_TIMEZONE = 'America/Costa_Rica'
 export const HOLD_MINUTES = 30
@@ -8,6 +8,13 @@ export function consultationDuration(id: string): number | null {
   if (!item) return null
   const value = Number.parseInt(item.duration, 10)
   return Number.isFinite(value) ? value : null
+}
+
+export function isCanonicalBookingSelection(consultationId: string, mode: string, language: string, time: string) {
+  return consultationTypes.some((item) => item.id === consultationId) &&
+    consultationModes.some((item) => item.value === mode || item.label === mode) &&
+    languages.some((item) => item.value === language || item.label === language) &&
+    bookingTimeSlots.includes(time)
 }
 
 export function costaRicaDateTime(date: string, time: string): Date {

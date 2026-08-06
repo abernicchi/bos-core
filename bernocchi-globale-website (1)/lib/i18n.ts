@@ -9,7 +9,7 @@ export function detectLocale(cookieValue?: string | null, acceptLanguage?: strin
   return 'en'
 }
 export const dictionaries = {
-  es: { unavailable: 'No disponible', loading: 'Consultando disponibilidad…', timezone: 'Hora de Costa Rica' },
-  en: { unavailable: 'Unavailable', loading: 'Checking availability…', timezone: 'Costa Rica time' },
-  it: { unavailable: 'Non disponibile', loading: 'Verifica della disponibilità…', timezone: 'Ora della Costa Rica' },
-} as const satisfies Record<Locale, Record<string, string>>
+  es: { nav: ['Casa','Instituciones','Fundador','Health','Journal','Gobernanza','Contacto'], book: 'Reservar consulta', skip: 'Ir al contenido', primary: 'Navegación principal', mobile: 'Navegación móvil', open: 'Abrir menú', close: 'Cerrar menú', unavailable: 'No disponible', loading: 'Consultando disponibilidad…', timezone: 'Hora de Costa Rica' },
+  en: { nav: ['Casa','Institutions','Founder','Health','Journal','Governance','Contact'], book: 'Book a consultation', skip: 'Skip to content', primary: 'Primary navigation', mobile: 'Mobile navigation', open: 'Open menu', close: 'Close menu', unavailable: 'Unavailable', loading: 'Checking availability…', timezone: 'Costa Rica time' },
+  it: { nav: ['Casa','Istituzioni','Fondatore','Health','Journal','Governance','Contatti'], book: 'Prenotare una consulenza', skip: 'Vai al contenuto', primary: 'Navigazione principale', mobile: 'Navigazione mobile', open: 'Apri menu', close: 'Chiudi menu', unavailable: 'Non disponibile', loading: 'Verifica della disponibilità…', timezone: 'Ora della Costa Rica' },
+} as const satisfies Record<Locale, { nav: readonly string[]; book: string; skip: string; primary: string; mobile: string; open: string; close: string; unavailable: string; loading: string; timezone: string }>

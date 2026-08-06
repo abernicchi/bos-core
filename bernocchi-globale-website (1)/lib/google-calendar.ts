@@ -10,6 +10,7 @@ export type CalendarEvent = {
 
 export class CalendarUnavailableError extends Error {}
 export class CalendarConflictError extends Error {}
+export class HoldExpiredError extends Error {}
 
 export function normalizePrivateKey(value: string) {
   return value.replace(/^['"]|['"]$/g, '').replaceAll('\\n', '\n')
@@ -54,9 +55,41 @@ export async function listEvents(start: Date, end: Date): Promise<CalendarEvent[
 }
 
 export function eventBlocksSlot(event: CalendarEvent, start: Date, end: Date, now = new Date()) {
+  if (event.extendedProperties?.private?.bookingMutex === 'true') return false
   if (event.status === 'cancelled' || isExpiredHold(event.extendedProperties?.private, now)) return false
   if (!event.start?.dateTime || !event.end?.dateTime) return true
   return overlaps(start, end, new Date(event.start.dateTime), new Date(event.end.dateTime))
+}
+
+/**
+ * A short-lived, Calendar-backed mutex serialises the read/create transaction
+ * across serverless instances. One lock per day intentionally protects
+ * intervals of different lengths. Google event-id uniqueness is the atomic
+ * compare-and-set operation; stale locks are reclaimed once their TTL elapses.
+ */
+export async function acquireBookingMutex(date: string, now = new Date()): Promise<string> {
+  const id = `bhmutex${date.replaceAll('-', '')}`
+  const resource = {
+    id, summary: 'BLOQUEO TEMPORAL DE RESERVAS — Bernocchi Health',
+    start: { dateTime: `${date}T00:00:00-06:00` }, end: { dateTime: `${date}T23:59:59-06:00` },
+    visibility: 'private', transparency: 'transparent',
+    extendedProperties: { private: { bookingMutex: 'true', lockExpiresAt: new Date(now.valueOf() + 20_000).toISOString() } },
+  }
+  try { await api('/events', { method: 'POST', body: JSON.stringify(resource) }); return id } catch (error) {
+    if (!(error instanceof CalendarConflictError)) throw error
+    const existing = await getEvent(id)
+    if (isExpiredBookingMutex(existing, now)) { await deleteEvent(id); await api('/events', { method: 'POST', body: JSON.stringify(resource) }); return id }
+    throw new CalendarConflictError('Booking transaction already in progress')
+  }
+}
+
+export function isExpiredBookingMutex(event: CalendarEvent, now = new Date()) {
+  const expires = event.extendedProperties?.private?.lockExpiresAt
+  return event.extendedProperties?.private?.bookingMutex === 'true' && Boolean(expires) && new Date(expires!) <= now
+}
+
+export async function releaseBookingMutex(id: string) {
+  try { await deleteEvent(id) } catch (error) { if (!(error instanceof CalendarUnavailableError)) throw error }
 }
 
 export async function removeExpired(events: CalendarEvent[], now = new Date()) {
@@ -83,8 +116,19 @@ export async function confirmEvent(event: CalendarEvent) {
   if (!event.id) throw new CalendarUnavailableError('Missing event')
   const p = event.extendedProperties?.private ?? {}
   if (p.bookingStatus === 'confirmed') return event
-  if (p.bookingStatus !== 'pending_deposit') throw new CalendarConflictError('Booking is not pending')
+  assertConfirmableHold(event)
+  if (!event.start?.dateTime || !event.end?.dateTime) throw new CalendarConflictError('Missing event interval')
+  const overlapping = await listEvents(new Date(event.start.dateTime), new Date(event.end.dateTime))
+  if (overlapping.some((candidate) => candidate.id !== event.id && eventBlocksSlot(candidate, new Date(event.start!.dateTime!), new Date(event.end!.dateTime!)))) {
+    throw new CalendarConflictError('The interval is no longer available')
+  }
   const virtual = p.mode === 'online' || /virtual|online|línea/i.test(p.mode ?? '')
   const body = { ...event, summary: `CITA CONFIRMADA — Bernocchi Health — ${p.consultation ?? ''}`, attendees: p.patientEmail ? [{ email: p.patientEmail }] : undefined, extendedProperties: { private: { ...p, bookingStatus: 'confirmed', holdExpiresAt: undefined } }, ...(virtual ? { conferenceData: { createRequest: { requestId: `meet-${event.id}` } } } : {}) }
   return api(`/events/${encodeURIComponent(event.id)}?sendUpdates=all&conferenceDataVersion=1`, { method: 'PATCH', body: JSON.stringify(body) }) as Promise<CalendarEvent>
+}
+
+export function assertConfirmableHold(event: CalendarEvent, now = new Date()) {
+  const properties = event.extendedProperties?.private ?? {}
+  if (properties.bookingStatus !== 'pending_deposit') throw new CalendarConflictError('Booking is not pending')
+  if (!properties.holdExpiresAt || new Date(properties.holdExpiresAt) <= now) throw new HoldExpiredError('Provisional hold expired')
 }
