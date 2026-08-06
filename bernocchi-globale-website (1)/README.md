@@ -1,63 +1,82 @@
 # Casa Bernocchi
 
-Sito istituzionale pubblico di **Bernocchi Globale Holdings** (Casa Bernocchi) — un
-gruppo italiano privato fondato nel 2026, con sede centrale a Milano e ufficio
-regionale in Costa Rica.
+Sitio institucional público de **Bernocchi Globale Holdings** — Casa Bernocchi.
+Construido con Next.js 16, React 19, Tailwind CSS v4 y TypeScript.
 
-Costruito con Next.js 16 (App Router), React 19, Tailwind CSS v4 e TypeScript.
+## Marco institucional y reglas de verdad
 
-## Regole di verità del contenuto
+- Casa Bernocchi declara una **fundación histórica en Roma, Italia, en 1893**.
+- La **operación regional en Costa Rica** se abre en **2024**.
+- La fecha histórica de 1893 debe conservar respaldo documental, archivístico y genealógico antes de utilizarse en trámites, publicidad regulada o declaraciones que requieran prueba externa.
+- No inventar clientes, premios, ingresos, equipos, alianzas, licencias, oficinas físicas ni estadísticas.
+- Distinguir siempre entre:
+  - `heritage`: origen o memoria histórica;
+  - `operating`: operación activa;
+  - `coordination`: centro de coordinación;
+  - `market`: mercado estratégico o proyección comercial;
+  - `planned`: institución o instalación futura.
+- Una ciudad marcada como mercado estratégico **no debe presentarse como sucursal física abierta al público**.
+- La bandera de la Unión Europea expresa orientación institucional y geográfica; no implica aprobación, patrocinio ni afiliación oficial.
+- Usar la grafía italiana **Bernocchi Globale**, nunca “Bernocchi Global”.
 
-Il sito è deliberatamente onesto sullo stato reale del gruppo. **Non modificare
-questi vincoli senza istruzioni esplicite:**
+## Idiomas
 
-- Fondazione nel **2026**. Sede a **Milano, Italia**; ufficio regionale in **Costa Rica**.
-- Non inventare clienti, premi, fatturato, team, partnership, sedi o statistiche.
-- Le istituzioni non ancora attive sono marcate `development`, `planned` o `future`.
-- **Bernocchi Health** è l'unica istituzione a priorità operativa.
-- Usare sempre la grafia italiana **"Bernocchi Globale"**, mai "Bernocchi Global".
+La interfaz internacional admite:
 
-## Contenuto centralizzato
+- Español
+- English
+- Italiano
+- Français
+- Deutsch
+- Català
+- 中文（普通话）
+- Polski
+- Русский
+- 日本語
 
-Tutto il contenuto strutturato (nomi, istituzioni, ordini, contatti, articoli del
-Journal, tipi di richiesta) vive in un unico file:
+La preferencia se conserva localmente y se aplica a la portada, navegación y flujo de reserva. Las páginas legales y editoriales deben traducirse únicamente después de revisión profesional por idioma y jurisdicción.
 
-```
-lib/content.ts
-```
+## Reservas Bernocchi Health
 
-Modificando i valori qui, l'aggiornamento si propaga a tutto il sito.
+El flujo público sigue esta secuencia:
 
-## Struttura delle pagine
+1. tipo de servicio;
+2. modalidad;
+3. datos y disponibilidad;
+4. revisión y envío.
 
-| Rotta | Contenuto |
+La selección de servicio y modalidad avanza automáticamente. La solicitud se guarda en Supabase desde el servidor y se notifica por correo a la Segreteria Generale. El método y el estado de pago permanecen en `pending` hasta verificación externa.
+
+### Seguridad
+
+- No se recopila historia clínica ni información médica sensible en el formulario público.
+- `SUPABASE_SERVICE_ROLE_KEY` y `RESEND_API_KEY` son secretos exclusivos del servidor.
+- La tabla de reservas tiene RLS activado y no permite acceso directo a visitantes anónimos.
+- El correo continúa como canal de respaldo operativo si el almacenamiento temporalmente falla.
+
+## Variables de entorno
+
+- `NEXT_PUBLIC_SITE_URL`
+- `CONTACT_RECIPIENT_EMAIL`
+- `CONTACT_FROM_EMAIL`
+- `RESEND_API_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+## Rutas principales
+
+| Ruta | Contenido |
 | --- | --- |
-| `/` | Home istituzionale |
-| `/la-casa` | Identità, missione, visione, principi |
-| `/istituzioni` | Le istituzioni del gruppo e il loro stato |
-| `/ordini` | I sei Ordini (domini disciplinari) |
-| `/health` | Bernocchi Health — pagina di conversione (form) |
-| `/legal` | Bernocchi Legal — in sviluppo (interesse professionale) |
-| `/governance` | Modello di governance e integrità |
-| `/fondatore` | Il fondatore e la filosofia |
-| `/journal` + `/journal/[slug]` | Note editoriali (bozze) |
-| `/contatti` | Segreteria Generale e form generale |
-| `/privacy`, `/cookies`, `/termini` | Documenti legali (modelli da far validare) |
+| `/` | Portada institucional premium y red internacional |
+| `/casa` | Historia, misión, principios y arquitectura institucional |
+| `/institutions` | Instituciones y estado declarado |
+| `/health` | Bernocchi Health y reserva de citas |
+| `/governance` | Gobernanza, integridad y riesgo |
+| `/founder` | Oficina del Fundador y filosofía |
+| `/journal` | Contenido editorial |
+| `/contact` | Segreteria Generale |
+| `/privacy`, `/cookies`, `/terms` | Documentos legales sujetos a validación profesional |
 
-## Modulo di contatto
+## Criterio de diseño
 
-Il componente `components/inquiry-form.tsx` invia a `app/api/inquiry/route.ts`.
-Di default la richiesta viene validata e registrata a log. Per l'invio email in
-produzione, collegare un provider (es. Resend) nella route e impostare le variabili
-d'ambiente indicate in `.env.example`.
-
-## Variabili d'ambiente
-
-Vedi `.env.example`. Nessuna è obbligatoria per l'esecuzione in locale.
-
-## Note
-
-- I documenti legali sono **modelli** e devono essere verificati da un legale per le
-  giurisdizioni italiana e costaricana prima della pubblicazione.
-- Le lingue previste sono Italiano (default), English ed Español; il selettore è
-  predisposto per l'internazionalizzazione futura.
+La experiencia visual debe transmitir alta relojería y automoción europea en precisión, proporción, movimiento, materialidad y discreción, sin copiar marcas, logotipos, interfaces protegidas ni elementos distintivos de terceros.
