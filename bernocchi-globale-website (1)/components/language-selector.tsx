@@ -1,102 +1,93 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Globe, Check } from 'lucide-react'
-import { languages } from '@/lib/content'
+import { useEffect, useRef, useState } from 'react'
+import { Check, ChevronDown, Globe2 } from 'lucide-react'
+import { casaLocales } from '@/lib/i18n'
+import { useCasaLocale } from '@/components/use-casa-locale'
 import { cn } from '@/lib/utils'
 
-/**
- * Language selector for Italian, English and Spanish.
- *
- * Currently persists the preference locally and updates the label; genuine
- * locale routing (/it, /en, /es) with full translation is the dedicated
- * follow-up. The dropdown uses explicit high-contrast colours (dark navy text
- * on an ivory/white surface) so it is always readable regardless of the
- * surrounding light/dark section, shows a discreet checkmark on the active
- * language, and is positioned so it never clips off-screen on mobile.
- */
+const copy = {
+  es: 'Idioma', en: 'Language', it: 'Lingua', fr: 'Langue', de: 'Sprache',
+  ca: 'Idioma', zh: '语言', pl: 'Język', ru: 'Язык', ja: '言語',
+} as const
+
 export function LanguageSelector({ className }: { className?: string }) {
   const [open, setOpen] = useState(false)
-  const [current, setCurrent] = useState('en')
+  const menuRef = useRef<HTMLDivElement>(null)
+  const { locale, changeLocale } = useCasaLocale()
+  const active = casaLocales.find((item) => item.value === locale) ?? casaLocales[0]
 
   useEffect(() => {
-    const stored = window.localStorage.getItem('cb-lang')
-    if (stored) setCurrent(stored)
+    function onPointerDown(event: PointerEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
   }, [])
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    if (open) window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open])
-
-  function choose(value: string) {
-    setCurrent(value)
-    window.localStorage.setItem('cb-lang', value)
-    setOpen(false)
-    // TODO (i18n follow-up): navigate to the locale route (/it, /en, /es)
-    // preserving the current path, and persist via cookie for SSR.
-  }
-
-  const active = languages.find((l) => l.value === current) ?? languages[1]
-
   return (
-    <div className={cn('relative', className)}>
+    <div ref={menuRef} className={cn('relative', className)}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen((value) => !value)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label="Select language"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none"
+        aria-label={copy[locale]}
+        className="group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-2 text-xs font-medium text-foreground shadow-sm backdrop-blur-xl transition hover:border-gold/60 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
       >
-        <Globe className="size-4" />
+        <Globe2 className="size-3.5" />
         <span aria-hidden="true">{active.flag}</span>
-        <span className="uppercase">{active.value}</span>
+        <span className="uppercase tracking-[0.14em]">{active.value}</span>
+        <ChevronDown className={cn('size-3.5 transition-transform', open && 'rotate-180')} />
       </button>
+
       {open ? (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setOpen(false)}
-            aria-hidden="true"
-          />
-          <ul
-            role="listbox"
-            aria-label="Language"
-            className="absolute right-0 z-50 mt-2 min-w-44 max-w-[calc(100vw-2rem)] overflow-hidden rounded-sm border border-[#d9d2c2] bg-white py-1 text-[#07131f] shadow-xl"
-          >
-            {languages.map((lang) => {
-              const selected = current === lang.value
+        <div className="absolute right-0 z-[90] mt-3 w-[min(25rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[#b99752]/35 bg-[#07131f]/98 p-2 text-[#f8f3e9] shadow-[0_24px_80px_rgba(0,0,0,.5)] backdrop-blur-2xl">
+          <div className="border-b border-white/10 px-3 py-3">
+            <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[#d7bb79]">{copy[locale]}</p>
+            <p className="mt-1 text-xs text-white/55">Casa Bernocchi · International interface</p>
+          </div>
+          <ul role="listbox" className="grid grid-cols-1 gap-1 p-1 sm:grid-cols-2">
+            {casaLocales.map((item) => {
+              const selected = item.value === locale
               return (
-                <li key={lang.value}>
+                <li key={item.value}>
                   <button
                     type="button"
                     role="option"
                     aria-selected={selected}
-                    onClick={() => choose(lang.value)}
+                    onClick={() => {
+                      changeLocale(item.value)
+                      setOpen(false)
+                    }}
                     className={cn(
-                      'flex w-full items-center justify-between gap-4 px-3.5 py-2.5 text-left text-sm text-[#07131f] transition-colors hover:bg-[#f3efe5]',
-                      selected && 'bg-[#f3efe5]',
+                      'flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm transition',
+                      selected
+                        ? 'bg-[#b99752]/18 text-[#f1d99d]'
+                        : 'text-white/78 hover:bg-white/7 hover:text-white',
                     )}
                   >
-                    <span className="flex items-center gap-2.5">
-                      <span aria-hidden="true" className="text-base leading-none">
-                        {lang.flag}
+                    <span className="flex items-center gap-3">
+                      <span className="text-lg" aria-hidden="true">{item.flag}</span>
+                      <span>
+                        <span className="block font-medium">{item.nativeLabel}</span>
+                        <span className="mt-0.5 block text-[0.64rem] uppercase tracking-[0.14em] text-white/38">{item.value}</span>
                       </span>
-                      <span>{lang.label}</span>
                     </span>
-                    {selected ? (
-                      <Check className="size-4 text-[#b9964a]" />
-                    ) : null}
+                    {selected ? <Check className="size-4 text-[#d7bb79]" /> : null}
                   </button>
                 </li>
               )
             })}
           </ul>
-        </>
+        </div>
       ) : null}
     </div>
   )

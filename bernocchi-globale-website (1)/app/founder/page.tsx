@@ -1,166 +1,141 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
-import { PageHeader } from '@/components/page-header'
+import { ArrowRight, BookOpen, Landmark, ShieldCheck } from 'lucide-react'
 import { principles, site } from '@/lib/content'
 
 export const metadata: Metadata = {
-  title: 'The Founder — Casa Bernocchi',
+  title: 'Oficina del Fundador — Casa Bernocchi',
   description:
-    'The vision behind Casa Bernocchi: institutions built on verified knowledge, integrity and generational continuity.',
+    'La visión contemporánea de Casa Bernocchi: custodiar una herencia institucional iniciada en Roma en 1893 y convertirla en instituciones verificables y duraderas.',
   alternates: { canonical: '/founder' },
 }
 
 export default function FounderPage() {
   return (
     <>
-      <PageHeader
-        eyebrow="The Founder"
-        title="A house built one documented decision at a time."
-        intro="Casa Bernocchi begins with a conviction: that institutions, unlike companies, are built to outlive those who found them."
-      />
+      <section className="relative isolate overflow-hidden border-b border-white/10 bg-[#07131f] text-[#f7f1e6]">
+        <Image
+          src="/images/founder-portrait.png"
+          alt="Estudio editorial de la Oficina del Fundador de Casa Bernocchi"
+          fill
+          priority
+          className="object-cover opacity-24"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,#07131f_4%,rgba(7,19,31,.96)_55%,rgba(7,19,31,.72))]" />
+        <div className="relative mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#c9a85f]">
+            Oficina del Fundador
+          </p>
+          <h1 className="mt-6 max-w-5xl text-balance font-serif text-5xl font-light leading-[.98] sm:text-6xl lg:text-7xl">
+            Custodiar el origen. Gobernar el presente. Preparar el legado.
+          </h1>
+          <p className="mt-8 max-w-2xl text-base leading-8 text-white/62 sm:text-lg">
+            La Oficina del Fundador dirige la etapa contemporánea de Casa Bernocchi,
+            preserva la coherencia institucional y transforma una memoria iniciada
+            en Roma en 1893 en estructuras capaces de perdurar.
+          </p>
+        </div>
+      </section>
 
-      {/* Portrait & biography */}
-      <section className="border-b border-border">
-        <div className="mx-auto grid max-w-6xl gap-12 px-6 py-16 md:py-24 lg:grid-cols-[0.8fr_1fr] lg:items-center lg:gap-16">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-sm border border-border">
+      <section className="border-b border-border bg-[#f3eee3] text-[#07131f]">
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[.85fr_1.15fr] lg:items-center lg:px-10 lg:py-28">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-[#07131f]/10 shadow-[0_30px_90px_rgba(7,19,31,.12)]">
             <Image
-              src="/images/founder-portrait.png"
-              alt="An editorial study interior representing the founder of Casa Bernocchi"
+              src="/images/library.png"
+              alt="Biblioteca institucional, símbolo de conocimiento y continuidad"
               fill
-              priority
               className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 40vw"
+              sizes="(max-width: 1024px) 100vw, 42vw"
             />
-            <span className="absolute bottom-4 left-4 rounded-full border border-gold/40 bg-navy/70 px-3 py-1 text-[0.62rem] uppercase tracking-[0.2em] text-gold backdrop-blur-sm">
-              Portrait to follow
-            </span>
           </div>
           <div>
-            <p className="eyebrow text-gold">Biography</p>
-            <blockquote className="mt-6 text-balance font-serif text-2xl leading-relaxed text-foreground md:text-3xl">
-              &ldquo;I did not want to build a company that chased cycles. I
-              wanted to build a house of institutions — bound by ethics, held to
-              evidence, and accountable across generations.&rdquo;
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#a3823e]">Mandato contemporáneo</p>
+            <blockquote className="mt-6 text-balance font-serif text-3xl font-light leading-relaxed sm:text-4xl">
+              “Una institución no se mide por lo que proclama, sino por aquello que puede documentar, sostener y transmitir.”
             </blockquote>
-            <p className="mt-6 leading-relaxed text-muted-foreground">
-              Founded in Italy in 2026, Casa Bernocchi is the institutional
-              identity of Bernocchi Globale Holdings. Its purpose is to build and
-              govern specialised institutions that share one system of standards.
-              The work begins with Bernocchi Health and extends, deliberately and
-              without haste, into law, science, technology and education.
-            </p>
-            <p className="mt-4 leading-relaxed text-muted-foreground">
-              The method is simple to state and demanding to keep: verify before
-              deciding, write down what is decided, and measure value in decades
-              rather than quarters.
-            </p>
+            <div className="mt-8 space-y-5 text-base leading-8 text-[#07131f]/62">
+              <p>
+                Casa Bernocchi declara su fundación histórica en Roma, Italia, en
+                1893. En 2024 abre su operación regional en Costa Rica y comienza
+                una etapa de reorganización, expansión profesional y construcción
+                institucional bajo la dirección de la Oficina del Fundador.
+              </p>
+              <p>
+                Esta Oficina no sustituye la historia de la Casa: la custodia. Su
+                función es convertir principios heredados en gobernanza, archivos,
+                protocolos, instituciones especializadas y decisiones verificables.
+              </p>
+              <p>
+                El horizonte no es una campaña ni un ciclo financiero. Es la
+                continuidad generacional de una Casa capaz de actuar con precisión
+                en salud, derecho, ciencia, innovación, educación y capital.
+              </p>
+            </div>
+            <div className="mt-8 flex gap-3 rounded-2xl border border-[#a3823e]/20 bg-[#a3823e]/6 p-5 text-xs leading-6 text-[#07131f]/56">
+              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#a3823e]" />
+              <p>
+                La fecha de 1893 es una declaración institucional que deberá conservar respaldo archivístico suficiente cuando se utilice ante terceros, autoridades o procesos de verificación histórica.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Institutional philosophy */}
-      <section className="border-b border-border bg-stone">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-          <div className="grid gap-10 lg:grid-cols-[0.6fr_1fr] lg:gap-16">
+      <section className="border-b border-white/10 bg-[#07131f] text-[#f7f1e6]">
+        <div className="mx-auto max-w-7xl px-6 py-20 lg:px-10 lg:py-28">
+          <div className="grid gap-10 lg:grid-cols-[.75fr_1.25fr]">
             <div>
-              <p className="eyebrow text-gold">Institutional philosophy</p>
-              <h2 className="mt-4 text-balance font-serif text-3xl leading-tight text-foreground md:text-4xl">
-                Permanence is a design choice.
-              </h2>
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#c9a85f]">Método institucional</p>
+              <h2 className="mt-5 text-balance font-serif text-4xl font-light leading-tight sm:text-5xl">Permanecer exige diseño.</h2>
             </div>
-            <div className="space-y-4 text-lg leading-relaxed text-muted-foreground">
-              <p>
-                A company is organised around an opportunity; an institution is
-                organised around a duty. Casa Bernocchi is built on the second
-                idea — that what endures does so because knowledge is encoded
-                into rules, documents and practice, and not left to the memory of
-                any single person.
-              </p>
-              <p>
-                Every institution of the house answers to the same standards:
-                verified knowledge before action, integrity in every decision,
-                and stewardship measured across generations. Growth is
-                deliberate. Nothing is claimed before it is real.
-              </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                ['Verificar', 'Separar hechos, hipótesis y recomendaciones antes de decidir.', BookOpen],
+                ['Documentar', 'Registrar decisiones, responsables, riesgos y versiones.', Landmark],
+                ['Gobernar', 'Asignar autoridad, controles y rendición de cuentas.', ShieldCheck],
+                ['Transmitir', 'Convertir el conocimiento individual en patrimonio institucional.', ArrowRight],
+              ].map(([title, body, Icon]) => {
+                const Component = Icon as typeof BookOpen
+                return (
+                  <article key={String(title)} className="rounded-3xl border border-white/10 bg-white/[0.035] p-7">
+                    <Component className="size-5 text-[#c9a85f]" />
+                    <h3 className="mt-7 font-serif text-2xl">{String(title)}</h3>
+                    <p className="mt-3 text-sm leading-7 text-white/52">{String(body)}</p>
+                  </article>
+                )
+              })}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Vision & Mission */}
-      <section className="border-b border-border">
-        <div className="mx-auto grid max-w-6xl gap-px overflow-hidden rounded-none px-0 md:grid-cols-2">
-          <div className="border-b border-border px-6 py-14 md:border-b-0 md:border-r md:px-10 lg:py-20">
-            <p className="eyebrow text-gold">Vision</p>
-            <p className="mt-5 text-pretty font-serif text-2xl leading-relaxed text-foreground">
-              {site.vision}
-            </p>
-          </div>
-          <div className="px-6 py-14 md:px-10 lg:py-20">
-            <p className="eyebrow text-gold">Mission</p>
-            <p className="mt-5 text-pretty font-serif text-2xl leading-relaxed text-foreground">
-              {site.mission}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Values */}
-      <section className="border-b border-border bg-stone">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-          <p className="eyebrow text-gold">Values</p>
-          <h2 className="mt-4 max-w-2xl text-balance font-serif text-3xl leading-tight text-foreground md:text-4xl">
-            Three principles that govern every institution of the house.
-          </h2>
-          <div className="mt-10 grid gap-px overflow-hidden rounded-sm border border-border bg-border md:grid-cols-3">
-            {principles.map((p) => (
-              <div key={p.title} className="bg-stone p-8">
-                <h3 className="font-serif text-2xl text-foreground">
-                  {p.title}
-                </h3>
-                <p className="mt-1 text-xs uppercase tracking-[0.16em] text-gold">
-                  {p.subtitle}
-                </p>
-                <p className="mt-4 leading-relaxed text-muted-foreground">
-                  {p.body}
-                </p>
-              </div>
+      <section className="border-b border-border bg-[#f7f3ea] text-[#07131f]">
+        <div className="mx-auto max-w-7xl px-6 py-20 lg:px-10 lg:py-28">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#a3823e]">Principios de la Casa</p>
+          <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-[#07131f]/10 bg-[#07131f]/10 md:grid-cols-3">
+            {principles.map((principle) => (
+              <article key={principle.title} className="bg-[#f7f3ea] p-8">
+                <h3 className="font-serif text-3xl">{principle.title}</h3>
+                <p className="mt-2 text-[0.64rem] uppercase tracking-[0.2em] text-[#a3823e]">{principle.subtitle}</p>
+                <p className="mt-5 text-sm leading-7 text-[#07131f]/58">{principle.body}</p>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Long-term vision */}
-      <section className="on-navy border-b border-border">
-        <div className="mx-auto max-w-4xl px-6 py-20 text-center md:py-28">
-          <p className="eyebrow text-gold">The long view</p>
-          <p className="mx-auto mt-6 max-w-3xl text-balance font-serif text-3xl leading-snug text-foreground md:text-4xl">
-            To leave behind institutions that are stronger for the passage of
-            time — trusted, documented and worthy of the generations that inherit
-            them.
-          </p>
-          <p className="mx-auto mt-6 max-w-xl leading-relaxed text-muted-foreground">
-            The horizon is not the next cycle. It is the century. Each decision
-            is made so that those who come later inherit clarity rather than
-            correction.
-          </p>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="border-b border-border">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-16 md:flex-row md:items-center md:justify-between">
-          <p className="max-w-xl text-pretty font-serif text-2xl text-foreground">
-            Read how the house is governed.
-          </p>
-          <Link
-            href="/governance"
-            className="inline-flex items-center gap-2 self-start rounded-sm border border-border px-6 py-3 text-sm font-medium text-foreground transition-colors hover:border-gold hover:text-gold"
-          >
-            Governance
-            <ArrowRight className="size-4" />
+      <section className="bg-[#0a1927] text-[#f7f1e6]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-20 lg:flex-row lg:items-center lg:justify-between lg:px-10">
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#c9a85f]">Gobernanza</p>
+            <p className="mt-4 max-w-3xl text-balance font-serif text-3xl font-light leading-tight sm:text-4xl">
+              La autoridad de la Oficina del Fundador se ejerce mediante reglas, trazabilidad y responsabilidad.
+            </p>
+          </div>
+          <Link href="/governance" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#c9a85f] px-7 py-3.5 text-sm font-semibold text-[#07131f] transition hover:-translate-y-1 hover:bg-[#dfc47f]">
+            Conocer la gobernanza <ArrowRight className="size-4" />
           </Link>
         </div>
       </section>
