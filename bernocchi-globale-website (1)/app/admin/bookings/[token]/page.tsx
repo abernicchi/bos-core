@@ -7,6 +7,8 @@ const resultLabels: Record<string, string> = {
   'confirmed-email-error': 'La cita fue confirmada, pero el correo no pudo enviarse. Contacte al paciente manualmente.',
   expired: 'La reserva provisional venció y no puede confirmarse. Debe generarse una nueva solicitud.',
   conflict: 'El intervalo ya no está disponible. La reserva no fue confirmada.',
+  'meet-pending': 'Google Meet continúa preparándose. La cita está confirmada; reintente para completar el correo.',
+  'meet-failed': 'Google no pudo generar Meet. La cita permanece confirmada y puede reintentarse.',
   released: 'El horario fue liberado.', cancelled: 'La solicitud fue cancelada.', error: 'No fue posible completar la operación.',
 }
 

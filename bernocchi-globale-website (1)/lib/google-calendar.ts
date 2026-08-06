@@ -1,11 +1,12 @@
 import { createSign } from 'node:crypto'
-import { CALENDAR_TIMEZONE, isExpiredHold, overlaps, slotId } from './booking.ts'
+import { isExpiredHold, overlaps } from './booking.ts'
 
 export type CalendarEvent = {
   id?: string; summary?: string; description?: string; status?: string
   start?: { dateTime?: string }; end?: { dateTime?: string }
   extendedProperties?: { private?: Record<string, string> }
   hangoutLink?: string
+  conferenceData?: { createRequest?: { status?: { statusCode?: string } }; entryPoints?: Array<{ entryPointType?: string; uri?: string }> }
 }
 
 export class CalendarUnavailableError extends Error {}
@@ -55,62 +56,51 @@ export async function listEvents(start: Date, end: Date): Promise<CalendarEvent[
 }
 
 export function eventBlocksSlot(event: CalendarEvent, start: Date, end: Date, now = new Date()) {
-  if (event.extendedProperties?.private?.bookingMutex === 'true') return false
   if (event.status === 'cancelled' || isExpiredHold(event.extendedProperties?.private, now)) return false
   if (!event.start?.dateTime || !event.end?.dateTime) return true
   return overlaps(start, end, new Date(event.start.dateTime), new Date(event.end.dateTime))
-}
-
-/**
- * A short-lived, Calendar-backed mutex serialises the read/create transaction
- * across serverless instances. One lock per day intentionally protects
- * intervals of different lengths. Google event-id uniqueness is the atomic
- * compare-and-set operation; stale locks are reclaimed once their TTL elapses.
- */
-export async function acquireBookingMutex(date: string, now = new Date()): Promise<string> {
-  const id = `bhmutex${date.replaceAll('-', '')}`
-  const resource = {
-    id, summary: 'BLOQUEO TEMPORAL DE RESERVAS — Bernocchi Health',
-    start: { dateTime: `${date}T00:00:00-06:00` }, end: { dateTime: `${date}T23:59:59-06:00` },
-    visibility: 'private', transparency: 'transparent',
-    extendedProperties: { private: { bookingMutex: 'true', lockExpiresAt: new Date(now.valueOf() + 20_000).toISOString() } },
-  }
-  try { await api('/events', { method: 'POST', body: JSON.stringify(resource) }); return id } catch (error) {
-    if (!(error instanceof CalendarConflictError)) throw error
-    const existing = await getEvent(id)
-    if (isExpiredBookingMutex(existing, now)) { await deleteEvent(id); await api('/events', { method: 'POST', body: JSON.stringify(resource) }); return id }
-    throw new CalendarConflictError('Booking transaction already in progress')
-  }
-}
-
-export function isExpiredBookingMutex(event: CalendarEvent, now = new Date()) {
-  const expires = event.extendedProperties?.private?.lockExpiresAt
-  return event.extendedProperties?.private?.bookingMutex === 'true' && Boolean(expires) && new Date(expires!) <= now
-}
-
-export async function releaseBookingMutex(id: string) {
-  try { await deleteEvent(id) } catch (error) { if (!(error instanceof CalendarUnavailableError)) throw error }
 }
 
 export async function removeExpired(events: CalendarEvent[], now = new Date()) {
   await Promise.allSettled(events.filter((e) => e.id && isExpiredHold(e.extendedProperties?.private, now)).map((e) => deleteEvent(e.id!)))
 }
 
-export async function createPending(input: { date: string; time: string; duration: number; consultation: string; consultationId: string; patientName: string; patientEmail: string; patientWhatsapp: string; language: string; mode: string }) {
+export async function createPending(input: { bookingId: string; date: string; time: string; duration: number; consultation: string; consultationId: string; patientName: string; patientEmail: string; patientWhatsapp: string; language: string; mode: string; holdExpiresAt: string }) {
   const start = new Date(`${input.date}T${input.time}:00-06:00`); const end = new Date(start.valueOf() + input.duration * 60_000)
-  const holdExpiresAt = new Date(Date.now() + 30 * 60_000).toISOString()
-  const id = slotId(input.date, input.time, input.duration)
   const resource: CalendarEvent & { visibility: string; transparency: string } = {
-    id, summary: `PENDIENTE DE DEPÓSITO — Bernocchi Health — ${input.consultation}`,
+    summary: `PENDIENTE DE DEPÓSITO — Bernocchi Health — ${input.consultation}`,
     description: `Contacto de reserva: ${input.patientName} | ${input.patientEmail} | ${input.patientWhatsapp}`,
     start: { dateTime: start.toISOString() }, end: { dateTime: end.toISOString() }, visibility: 'private', transparency: 'opaque',
-    extendedProperties: { private: { bookingStatus: 'pending_deposit', holdExpiresAt, patientEmail: input.patientEmail, patientName: input.patientName, patientWhatsapp: input.patientWhatsapp, consultation: input.consultation, consultationId: input.consultationId, language: input.language, mode: input.mode } },
+    extendedProperties: { private: { bookingId: input.bookingId, bookingStatus: 'pending_deposit', holdExpiresAt: input.holdExpiresAt, patientEmail: input.patientEmail, patientName: input.patientName, patientWhatsapp: input.patientWhatsapp, consultation: input.consultation, consultationId: input.consultationId, language: input.language, mode: input.mode } },
   }
-  await api('/events', { method: 'POST', body: JSON.stringify(resource) }); return { id, holdExpiresAt }
+  const created = await api('/events', { method: 'POST', body: JSON.stringify(resource) }) as CalendarEvent
+  if (!created.id) throw new CalendarUnavailableError('Calendar did not return an event id')
+  return { id: created.id, holdExpiresAt: input.holdExpiresAt }
 }
 
 export const getEvent = (id: string) => api(`/events/${encodeURIComponent(id)}`) as Promise<CalendarEvent>
 export const deleteEvent = (id: string) => api(`/events/${encodeURIComponent(id)}`, { method: 'DELETE' })
+
+export async function waitForConference(eventId: string, options: { attempts?: number; baseDelayMs?: number } = {}) {
+  const attempts = options.attempts ?? 5; const baseDelayMs = options.baseDelayMs ?? 350
+  let event = await getEvent(eventId)
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const result = conferenceResult(event)
+    if (result.status === 'success') return { ...result, event }
+    if (result.status === 'failed') return { ...result, event }
+    if (attempt < attempts - 1) await new Promise((resolve) => setTimeout(resolve, baseDelayMs * (attempt + 1)))
+    event = await getEvent(eventId)
+  }
+  return { status: 'pending' as const, event }
+}
+
+export function conferenceResult(event: CalendarEvent) {
+  const status = event.conferenceData?.createRequest?.status?.statusCode
+  const videoUrl = event.hangoutLink ?? event.conferenceData?.entryPoints?.find((point) => point.entryPointType === 'video')?.uri
+  if (status === 'success' || videoUrl) return { status: 'success' as const, videoUrl }
+  if (status === 'failed') return { status: 'failed' as const }
+  return { status: 'pending' as const }
+}
 
 export async function confirmEvent(event: CalendarEvent) {
   if (!event.id) throw new CalendarUnavailableError('Missing event')

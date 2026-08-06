@@ -30,10 +30,6 @@ export function isExpiredHold(properties: Record<string, string> | undefined, no
     Boolean(properties.holdExpiresAt) && new Date(properties!.holdExpiresAt) <= now
 }
 
-export function slotId(date: string, time: string, duration: number) {
-  return `bh${date.replaceAll('-', '')}${time.replace(':', '')}${duration}`.toLowerCase()
-}
-
 export function validBookingDate(date: string, now = new Date()) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false
   const value = costaRicaDateTime(date, '23:59')

@@ -7,7 +7,8 @@ import {
   SEGRETERIA_RECIPIENT,
 } from '@/lib/email'
 import { consultationDuration, costaRicaDateTime, validBookingDate } from '@/lib/booking'
-import { CalendarConflictError, acquireBookingMutex, createPending, deleteEvent, eventBlocksSlot, listEvents, releaseBookingMutex } from '@/lib/google-calendar'
+import { CalendarConflictError, createPending, deleteEvent, eventBlocksSlot, listEvents } from '@/lib/google-calendar'
+import { ReservationConflictError, reserveAtomic, updateReservation } from '@/lib/booking-store'
 import { createAdminToken } from '@/lib/admin-token'
 import { bookingTimeSlots, consultationModes, consultationTypes, languages } from '@/lib/content'
 
@@ -93,19 +94,25 @@ export async function POST(request: Request) {
 
   const start = costaRicaDateTime(date, time)
   const end = new Date(start.valueOf() + duration! * 60_000)
-  let mutexId: string | undefined
   let hold: { id: string; holdExpiresAt: string }
+  let reservationId: string | undefined
+  let googleEventId: string | undefined
   try {
-    mutexId = await acquireBookingMutex(date)
-    // Mandatory second read after acquiring the cross-instance mutex.
-    const events = await listEvents(start, end)
-    if (events.some((event) => eventBlocksSlot(event, start, end))) return NextResponse.json({ error: 'Slot unavailable.' }, { status: 409 })
-    hold = await createPending({ date, time, duration: duration!, consultation, consultationId, patientName: fullName, patientEmail: email, patientWhatsapp: whatsapp, language: canonicalLanguage!.value, mode: canonicalMode!.value })
+    const before = await listEvents(start, end)
+    if (before.some((event) => eventBlocksSlot(event, start, end))) return NextResponse.json({ error: 'Slot unavailable.' }, { status: 409 })
+    const holdExpiresAt = new Date(Date.now() + 30 * 60_000).toISOString()
+    const reservation = await reserveAtomic({ consultationId, consultation, mode: canonicalMode!.value, language: canonicalLanguage!.value, patientName: fullName, patientEmail: email, patientWhatsapp: whatsapp, startAt: start.toISOString(), endAt: end.toISOString(), holdExpiresAt })
+    reservationId = reservation.id
+    const after = await listEvents(start, end)
+    if (after.some((event) => eventBlocksSlot(event, start, end))) { await updateReservation(reservation.id, { status: 'released' }); return NextResponse.json({ error: 'Slot unavailable.' }, { status: 409 }) }
+    hold = await createPending({ bookingId: reservation.id, date, time, duration: duration!, consultation, consultationId, patientName: fullName, patientEmail: email, patientWhatsapp: whatsapp, language: canonicalLanguage!.value, mode: canonicalMode!.value, holdExpiresAt })
+    googleEventId = hold.id
+    await updateReservation(reservation.id, { google_event_id: hold.id })
   } catch (error) {
-    if (error instanceof CalendarConflictError) return NextResponse.json({ error: 'Slot unavailable.' }, { status: 409 })
+    if (googleEventId) await deleteEvent(googleEventId).catch(() => undefined)
+    if (reservationId) await updateReservation(reservationId, { status: 'failed' }).catch(() => undefined)
+    if (error instanceof CalendarConflictError || error instanceof ReservationConflictError) return NextResponse.json({ error: 'Slot unavailable.' }, { status: 409 })
     return NextResponse.json({ error: 'Calendar temporarily unavailable.' }, { status: 503 })
-  } finally {
-    if (mutexId) await releaseBookingMutex(mutexId).catch(() => undefined)
   }
 
   const reviewToken = createAdminToken(hold.id, new Date(Date.now() + 48 * 60 * 60_000))
@@ -143,6 +150,7 @@ export async function POST(request: Request) {
 
   if (notifySegreteria.status === 'error') {
     await deleteEvent(hold.id).catch(() => undefined)
+    if (reservationId) await updateReservation(reservationId, { status: 'failed' }).catch(() => undefined)
     console.error(
       '[Casa Bernocchi] Appointment delivery failed:',
       notifySegreteria.detail,

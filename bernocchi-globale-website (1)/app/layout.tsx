@@ -2,7 +2,7 @@ import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata, Viewport } from 'next'
 import { cookies, headers } from 'next/headers'
-import { detectLocale } from '@/lib/i18n'
+import { detectLocale, dictionaries } from '@/lib/i18n'
 import { site, healthServices } from '@/lib/content'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
@@ -13,7 +13,7 @@ import './globals.css'
 
 const searchConsole = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
     default: `${site.name} — Italian excellence, built to endure`,
@@ -66,6 +66,13 @@ export const metadata: Metadata = {
   icons: {
     icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
   },
+}
+
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = detectLocale((await cookies()).get('cb-lang')?.value, (await headers()).get('accept-language'))
+  const copy = dictionaries[locale]
+  return { ...baseMetadata, title: { default: `${site.name} — ${copy.metaTitle}`, template: `%s — ${site.name}` }, description: copy.metaDescription, openGraph: { ...baseMetadata.openGraph, locale: locale === 'es' ? 'es_CR' : locale === 'it' ? 'it_IT' : 'en_GB', title: `${site.name} — ${copy.metaTitle}`, description: copy.metaDescription } }
 }
 
 export const viewport: Viewport = {
