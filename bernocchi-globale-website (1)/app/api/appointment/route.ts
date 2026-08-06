@@ -1,11 +1,5 @@
 import { NextResponse } from 'next/server'
-import {
-  buildAppointmentConfirmationEmail,
-  buildAppointmentConfirmationText,
-  getAppointmentConfirmationSubject,
-  sendEmail,
-  SEGRETERIA_RECIPIENT,
-} from '@/lib/email'
+import { sendEmail, SEGRETERIA_RECIPIENT } from '@/lib/email'
 import { consultationTypes } from '@/lib/content'
 import { normalizeLocale } from '@/lib/i18n'
 
@@ -159,14 +153,34 @@ export async function POST(request: Request) {
     console.log('[Casa Bernocchi] Appointment received without email delivery.', { recipient: SEGRETERIA_RECIPIENT, summary: internalSummary })
   }
 
-  const confirmationData = { fullName, consultation, mode, date, time, language }
+  const confirmationCopy = {
+    es: { subject: 'Solicitud de cita recibida — Bernocchi Health', title: 'Su solicitud ha sido recibida', body: 'La Segreteria Generale verificará la disponibilidad y remitirá la confirmación definitiva.', payment: 'El método de pago permanece pendiente. No se ha realizado ningún cobro.' },
+    en: { subject: 'Appointment request received — Bernocchi Health', title: 'Your request has been received', body: 'The Segreteria Generale will verify availability and send final confirmation.', payment: 'The payment method remains pending. No charge has been made.' },
+    it: { subject: 'Richiesta di appuntamento ricevuta — Bernocchi Health', title: 'La Sua richiesta è stata ricevuta', body: 'La Segreteria Generale verificherà la disponibilità e invierà la conferma definitiva.', payment: 'Il metodo di pagamento resta in attesa. Non è stato effettuato alcun addebito.' },
+    fr: { subject: 'Demande de rendez-vous reçue — Bernocchi Health', title: 'Votre demande a été reçue', body: 'La Segreteria Generale vérifiera la disponibilité et enverra la confirmation définitive.', payment: 'Le mode de paiement reste en attente. Aucun débit n’a été effectué.' },
+    de: { subject: 'Terminanfrage erhalten — Bernocchi Health', title: 'Ihre Anfrage ist eingegangen', body: 'Die Segreteria Generale prüft die Verfügbarkeit und sendet die endgültige Bestätigung.', payment: 'Die Zahlungsmethode ist noch offen. Es wurde nichts belastet.' },
+    ca: { subject: 'Sol·licitud de cita rebuda — Bernocchi Health', title: 'La vostra sol·licitud ha estat rebuda', body: 'La Segreteria Generale verificarà la disponibilitat i enviarà la confirmació definitiva.', payment: 'El mètode de pagament continua pendent. No s’ha realitzat cap cobrament.' },
+    zh: { subject: '已收到预约申请 — Bernocchi Health', title: '您的申请已收到', body: 'Segreteria Generale 将核实可用时间并发送最终确认。', payment: '付款方式仍为待定，尚未产生任何扣款。' },
+    pl: { subject: 'Otrzymano prośbę o wizytę — Bernocchi Health', title: 'Otrzymaliśmy Twoje zgłoszenie', body: 'Segreteria Generale sprawdzi dostępność i prześle ostateczne potwierdzenie.', payment: 'Metoda płatności pozostaje oczekująca. Nie pobrano opłaty.' },
+    ru: { subject: 'Запрос на приём получен — Bernocchi Health', title: 'Ваш запрос получен', body: 'Segreteria Generale проверит доступность и направит окончательное подтверждение.', payment: 'Способ оплаты пока не назначен. Списание не производилось.' },
+    ja: { subject: '予約申請を受け付けました — Bernocchi Health', title: '申請を受け付けました', body: 'Segreteria Generale が空き状況を確認し、最終確認を送付します。', payment: '支払方法は未定です。請求は行われていません。' },
+  }[language]
+
   if (notifySegreteria.status === 'sent') {
+    const patientText = [
+      confirmationCopy.title, '', confirmationCopy.body, confirmationCopy.payment, '',
+      `Consultation: ${consultation}`, `Mode: ${mode}`, `Requested date: ${date}`,
+      `Requested time: ${time}`,
+      `Reference: ${databaseResult.status === 'saved' ? databaseResult.referenceCode ?? 'pending' : 'pending'}`,
+      '', 'Casa Bernocchi · Segreteria Generale',
+    ].join('\n')
+    const patientHtml = `<!doctype html><html lang="${language}"><body style="margin:0;background:#07131f;color:#f7f1e6;font-family:Arial,sans-serif"><div style="max-width:640px;margin:0 auto;padding:48px 24px"><p style="color:#c9a85f;letter-spacing:.18em;text-transform:uppercase;font-size:11px">Bernocchi Health</p><h1 style="font-family:Georgia,serif;font-weight:400;font-size:36px;line-height:1.15">${confirmationCopy.title}</h1><p style="color:rgba(255,255,255,.72);line-height:1.7">${confirmationCopy.body}</p><div style="margin:28px 0;padding:20px;border:1px solid rgba(201,168,95,.35);border-radius:16px;background:rgba(201,168,95,.08)"><strong style="color:#e2c77f">${confirmationCopy.payment}</strong></div><table style="width:100%;border-collapse:collapse;color:rgba(255,255,255,.72);font-size:14px"><tr><td style="padding:8px 0">${consultation}</td></tr><tr><td style="padding:8px 0">${mode} · ${date} · ${time}</td></tr><tr><td style="padding:8px 0">Reference: ${databaseResult.status === 'saved' ? databaseResult.referenceCode ?? 'pending' : 'pending'}</td></tr></table><p style="margin-top:36px;color:rgba(255,255,255,.42);font-size:12px">Casa Bernocchi · Segreteria Generale</p></div></body></html>`
     const patientConfirmation = await sendEmail({
       to: email,
       replyTo: SEGRETERIA_RECIPIENT,
-      subject: getAppointmentConfirmationSubject(language),
-      text: buildAppointmentConfirmationText(confirmationData),
-      html: buildAppointmentConfirmationEmail(confirmationData),
+      subject: confirmationCopy.subject,
+      text: patientText,
+      html: patientHtml,
     })
     if (patientConfirmation.status === 'error') console.error('[Casa Bernocchi] Patient confirmation failed:', patientConfirmation.detail)
   }
