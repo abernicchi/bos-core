@@ -288,6 +288,7 @@ type Booking = {
   language: string
   date: string
   time: string
+  acceptedTerms: boolean
 }
 
 const STEPS = ['Consulta', 'Modalidad', 'Tus datos', 'Confirmación'] as const
@@ -339,6 +340,9 @@ export function BookingFlow({
   const [error, setError] = useState<string | null>(null)
   const [countryOpen, setCountryOpen] = useState(false)
   const [countrySearch, setCountrySearch] = useState('')
+  const [availability, setAvailability] = useState<Record<string, boolean>>({})
+  const [availabilityLoading, setAvailabilityLoading] = useState(false)
+  const [availabilityError, setAvailabilityError] = useState(false)
 
   const [booking, setBooking] = useState<Booking>({
     consultationId: initialConsultationId ?? consultationTypes[0].id,
@@ -352,6 +356,7 @@ export function BookingFlow({
     language: 'en',
     date: '',
     time: '',
+    acceptedTerms: false,
   })
 
   useEffect(() => {
@@ -364,7 +369,7 @@ export function BookingFlow({
       }
     }
 
-    function handleKeyDown(event: KeyboardEvent) {
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
       if (event.key === 'Escape') {
         setCountryOpen(false)
       }
@@ -402,6 +407,17 @@ export function BookingFlow({
       requestAnimationFrame(() => countrySearchRef.current?.focus())
     }
   }, [countryOpen])
+
+  useEffect(() => {
+    if (!booking.date || !booking.consultationId) return
+    const controller = new AbortController()
+    setAvailabilityLoading(true); setAvailabilityError(false); update('time', '')
+    fetch(`/api/availability?date=${encodeURIComponent(booking.date)}&consultationId=${encodeURIComponent(booking.consultationId)}`, { signal: controller.signal })
+      .then(async (response) => { if (!response.ok) throw new Error(); const data = await response.json() as { slots: { time: string; available: boolean }[] }; setAvailability(Object.fromEntries(data.slots.map((slot) => [slot.time, slot.available]))) })
+      .catch((error) => { if (error.name !== 'AbortError') setAvailabilityError(true) })
+      .finally(() => setAvailabilityLoading(false))
+    return () => controller.abort()
+  }, [booking.date, booking.consultationId])
 
   function moveOnEnter(
     event: KeyboardEvent<HTMLElement>,
@@ -484,7 +500,7 @@ export function BookingFlow({
           internationalWhatsApp.length <= 16 &&
           booking.country.trim().length > 1 &&
           Boolean(booking.date) &&
-          Boolean(booking.time)
+          Boolean(booking.time) && availability[booking.time] === true
         )
       default:
         return true
@@ -515,12 +531,13 @@ export function BookingFlow({
           language: languageLabel,
           date: booking.date,
           time: booking.time,
+          consultationId: booking.consultationId,
+          acceptedTerms: booking.acceptedTerms,
         }),
       })
 
-      if (!response.ok) {
-        throw new Error('request-failed')
-      }
+      if (response.status === 409) { setStep(2); update('time', ''); setError('Ese horario acaba de ser reservado. Selecciona otra hora disponible.'); return }
+      if (!response.ok) throw new Error('request-failed')
 
       router.push('/health/confirmation')
     } catch {
@@ -917,30 +934,37 @@ export function BookingFlow({
             </div>
 
             <div className="mt-5">
-              <span className={labelClass}>Preferred time</span>
+              <span className={labelClass}>Hora preferida</span>
+              <p className="mb-3 text-xs text-muted-foreground">Todos los horarios se interpretan en hora de Costa Rica.</p>
+              {availabilityLoading ? <p role="status" className="mb-3 inline-flex items-center gap-2 text-sm text-gold"><Loader2 className="size-4 animate-spin" /> Consultando disponibilidad…</p> : null}
+              {availabilityError ? <p role="alert" className="mb-3 text-sm text-destructive">No pudimos consultar el calendario. Cambia la fecha o inténtalo de nuevo.</p> : null}
 
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
                 {bookingTimeSlots.map((slot) => {
                   const selected = booking.time === slot
+                  const available = availability[slot] === true
 
                   return (
                     <button
                       ref={slot === bookingTimeSlots[0] ? firstTimeRef : undefined}
                       key={slot}
                       type="button"
+                      disabled={!available || availabilityLoading}
                       onClick={() => {
+                        if (!available) return
                         update('time', slot)
                         requestAnimationFrame(() => reviewButtonRef.current?.focus())
                       }}
                       className={cn(
                         'rounded-sm border py-2 text-sm transition-colors',
+                        !available && 'cursor-not-allowed border-border bg-muted text-muted-foreground opacity-55',
                         selected
                           ? 'border-gold bg-gold/10 text-gold'
                           : 'border-border text-card-foreground hover:border-gold/50',
                       )}
                       aria-pressed={selected}
                     >
-                      {slot}
+                      <span>{slot}</span>{!available && !availabilityLoading ? <span className="block text-[9px]">No disponible</span> : null}
                     </button>
                   )
                 })}
@@ -1002,6 +1026,12 @@ export function BookingFlow({
               </dl>
             </div>
 
+
+            <label className="mt-6 flex items-start gap-3 rounded-sm border border-gold/40 bg-gold/5 p-4 text-sm leading-relaxed text-card-foreground">
+              <input type="checkbox" checked={booking.acceptedTerms} onChange={(event) => update('acceptedTerms', event.target.checked)} className="mt-1 size-4 accent-[#b9964a]" />
+              <span>Acepto expresamente las condiciones de reserva y el tratamiento de datos descritos en la política de privacidad. La reserva es provisional durante 30 minutos y requiere un depósito fijo de ₡25.000 CRC.</span>
+            </label>
+
             {error ? (
               <p
                 role="alert"
@@ -1014,7 +1044,7 @@ export function BookingFlow({
             <button
               type="button"
               onClick={submitRequest}
-              disabled={submitting}
+              disabled={submitting || !booking.acceptedTerms}
               className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-gold px-6 py-3 text-sm font-medium text-navy transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               {submitting ? (

@@ -49,9 +49,7 @@ export default function PrivacyPage() {
 
       <LegalSection heading="Payments">
         <p>
-          Payments are processed by Stripe. Card details are handled directly by
-          Stripe and are never stored on our servers. Stripe acts as an
-          independent processor under its own terms and privacy policy.
+          Reservation deposits are handled manually through SINPE Móvil. This website does not collect or store card or bank-account details.
         </p>
       </LegalSection>
 

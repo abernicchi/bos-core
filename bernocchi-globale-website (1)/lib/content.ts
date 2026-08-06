@@ -151,7 +151,7 @@ export const principles = [
 /**
  * BERNOCCHI HEALTH SERVICES
  * The revenue-generating catalogue. Each service is delivered by licensed
- * professionals. Prices are indicative consultation fees in EUR.
+ * professionals. Prices are indicative consultation fees in USD.
  */
 export type HealthService = {
   id: string
@@ -159,7 +159,7 @@ export type HealthService = {
   description: string
   benefits: string[]
   priceInCents: number
-  currency: 'eur'
+  currency: 'usd'
   duration: string
 }
 
@@ -175,7 +175,7 @@ export const healthServices: HealthService[] = [
       'Confidential and judgement-free',
     ],
     priceInCents: 12000,
-    currency: 'eur',
+    currency: 'usd',
     duration: '50 minutes',
   },
   {
@@ -189,7 +189,7 @@ export const healthServices: HealthService[] = [
       'Non-judgemental guidance',
     ],
     priceInCents: 13000,
-    currency: 'eur',
+    currency: 'usd',
     duration: '50 minutes',
   },
   {
@@ -203,7 +203,7 @@ export const healthServices: HealthService[] = [
       'Practical tools between sessions',
     ],
     priceInCents: 15000,
-    currency: 'eur',
+    currency: 'usd',
     duration: '60 minutes',
   },
   {
@@ -217,7 +217,7 @@ export const healthServices: HealthService[] = [
       'Personalised strategy',
     ],
     priceInCents: 14000,
-    currency: 'eur',
+    currency: 'usd',
     duration: '50 minutes',
   },
   {
@@ -231,7 +231,7 @@ export const healthServices: HealthService[] = [
       'Flexible scheduling',
     ],
     priceInCents: 11000,
-    currency: 'eur',
+    currency: 'usd',
     duration: '50 minutes',
   },
   {
@@ -245,7 +245,7 @@ export const healthServices: HealthService[] = [
       'Coordinated follow-up',
     ],
     priceInCents: 24000,
-    currency: 'eur',
+    currency: 'usd',
     duration: '80 minutes',
   },
 ]

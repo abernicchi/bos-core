@@ -35,7 +35,9 @@ export function LanguageSelector({ className }: { className?: string }) {
   function choose(value: string) {
     setCurrent(value)
     window.localStorage.setItem('cb-lang', value)
+    document.cookie = `cb-lang=${encodeURIComponent(value)}; Path=/; Max-Age=31536000; SameSite=Lax; Secure`
     setOpen(false)
+    window.location.reload()
     // TODO (i18n follow-up): navigate to the locale route (/it, /en, /es)
     // preserving the current path, and persist via cookie for SSR.
   }
