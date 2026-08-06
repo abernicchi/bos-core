@@ -1,94 +1,52 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Check, MessageCircle, Mail, ArrowRight } from 'lucide-react'
+import { ArrowRight, Check, Clock3, CreditCard, Mail, MessageCircle, ShieldCheck } from 'lucide-react'
 import { site, bookingWhatsappUrl } from '@/lib/content'
 
 export const metadata: Metadata = {
-  title: 'Appointment Request Received — Bernocchi Health',
-  description:
-    'Your appointment request has been received. Confirm availability with the Bernocchi Health Segreteria on WhatsApp.',
+  title: 'Solicitud recibida — Bernocchi Health',
+  description: 'La solicitud de cita fue recibida y se encuentra en reserva provisional con método de pago pendiente.',
   robots: { index: false, follow: false },
   alternates: { canonical: '/health/confirmation' },
 }
 
-const steps = [
-  {
-    title: 'We have received your request',
-    body: 'The Segreteria Generale will review your preferred consultation, date and time.',
-  },
-  {
-    title: 'We confirm availability',
-    body: 'You will receive a reply by email or WhatsApp with confirmed details.',
-  },
-  {
-    title: 'Your consultation is scheduled',
-    body: 'Once confirmed, you will receive everything needed to attend online or in person.',
-  },
-]
+export default async function AppointmentConfirmationPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ref?: string }>
+}) {
+  const { ref } = await searchParams
 
-export default function AppointmentConfirmationPage() {
   return (
-    <section className="border-t border-border bg-navy py-20 text-ivory md:py-28">
-      <div className="mx-auto max-w-3xl px-6 text-center">
-        <span className="mx-auto inline-flex size-14 items-center justify-center rounded-full bg-gold text-navy">
-          <Check className="size-7" aria-hidden="true" />
+    <section className="min-h-[75svh] border-t border-white/10 bg-[#07131f] py-20 text-[#f7f1e6] md:py-28">
+      <div className="mx-auto max-w-4xl px-6 text-center">
+        <span className="mx-auto inline-flex size-16 items-center justify-center rounded-full border border-[#c9a85f]/40 bg-[#c9a85f] text-[#07131f] shadow-[0_0_50px_rgba(185,151,82,.22)]">
+          <Check className="size-8" aria-hidden="true" />
         </span>
-
-        <p className="mt-8 text-xs uppercase tracking-[0.2em] text-gold">
-          Bernocchi Health
+        <p className="mt-8 text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#c9a85f]">Bernocchi Health</p>
+        <h1 className="mt-4 text-balance font-serif text-4xl font-light leading-tight md:text-6xl">Su solicitud ha sido recibida.</h1>
+        <p className="mx-auto mt-6 max-w-2xl leading-8 text-white/62">
+          La fecha seleccionada quedó registrada como reserva provisional. La Segreteria Generale verificará disponibilidad y remitirá la confirmación definitiva por correo electrónico o WhatsApp.
         </p>
-        <h1 className="mt-3 text-balance font-serif text-4xl leading-tight md:text-5xl">
-          Your appointment request has been received
-        </h1>
-        <p className="mx-auto mt-5 max-w-xl leading-relaxed text-ivory/70">
-          Thank you. Our Segreteria Generale will review your request and
-          respond to confirm availability. To speed things up, you can confirm
-          directly with us on WhatsApp now.
-        </p>
+        {ref ? (
+          <div className="mx-auto mt-7 inline-flex items-center gap-3 rounded-full border border-white/12 bg-white/[0.04] px-5 py-2.5">
+            <ShieldCheck className="size-4 text-[#c9a85f]" />
+            <span className="text-[0.65rem] uppercase tracking-[0.18em] text-white/42">Referencia</span>
+            <strong className="font-mono text-sm tracking-wider text-[#e2c77f]">{ref}</strong>
+          </div>
+        ) : null}
 
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <a
-            href={bookingWhatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-sm bg-gold px-6 py-3 text-sm font-medium text-navy transition-colors hover:bg-gold/90"
-          >
-            <MessageCircle className="size-4" aria-hidden="true" />
-            Confirm availability on WhatsApp
-          </a>
-          <a
-            href={`mailto:${site.email}`}
-            className="inline-flex items-center gap-2 rounded-sm border border-ivory/25 px-6 py-3 text-sm font-medium text-ivory transition-colors hover:border-gold hover:text-gold"
-          >
-            <Mail className="size-4" aria-hidden="true" />
-            Email the Segreteria
-          </a>
+        <div className="mx-auto mt-12 grid max-w-3xl gap-4 text-left md:grid-cols-3">
+          <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-6"><Clock3 className="size-5 text-[#c9a85f]" /><h2 className="mt-6 font-serif text-xl">Reserva provisional</h2><p className="mt-3 text-sm leading-6 text-white/48">La selección todavía no constituye una cita confirmada.</p></article>
+          <article className="rounded-2xl border border-[#c9a85f]/28 bg-[#c9a85f]/7 p-6"><CreditCard className="size-5 text-[#c9a85f]" /><h2 className="mt-6 font-serif text-xl">Pago pendiente</h2><p className="mt-3 text-sm leading-6 text-white/48">No se realizó ningún cobro. La Segreteria asignará el método aplicable.</p></article>
+          <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-6"><Mail className="size-5 text-[#c9a85f]" /><h2 className="mt-6 font-serif text-xl">Confirmación directa</h2><p className="mt-3 text-sm leading-6 text-white/48">Recibirá una comunicación con los detalles definitivos y las condiciones.</p></article>
         </div>
 
-        {/* What happens next */}
-        <ol className="mx-auto mt-14 grid max-w-2xl gap-px overflow-hidden rounded-sm border border-ivory/10 bg-ivory/10 text-left sm:grid-cols-3">
-          {steps.map((step, i) => (
-            <li key={step.title} className="bg-navy p-6">
-              <span className="font-serif text-2xl text-gold">{i + 1}</span>
-              <h2 className="mt-2 font-serif text-lg text-ivory">
-                {step.title}
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-ivory/60">
-                {step.body}
-              </p>
-            </li>
-          ))}
-        </ol>
-
-        <div className="mt-12">
-          <Link
-            href="/health"
-            className="inline-flex items-center gap-2 text-sm text-ivory/70 transition-colors hover:text-gold"
-          >
-            Return to Bernocchi Health
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <a href={bookingWhatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[#c9a85f] px-6 py-3 text-sm font-semibold text-[#07131f] transition hover:bg-[#dfc47f]"><MessageCircle className="size-4" />Contactar por WhatsApp</a>
+          <a href={`mailto:${site.email}`} className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white transition hover:border-[#c9a85f] hover:text-[#e2c77f]"><Mail className="size-4" />Escribir a la Segreteria</a>
         </div>
+        <div className="mt-12"><Link href="/health" className="inline-flex items-center gap-2 text-sm text-white/52 transition hover:text-[#c9a85f]">Volver a Bernocchi Health<ArrowRight className="size-4" /></Link></div>
       </div>
     </section>
   )
