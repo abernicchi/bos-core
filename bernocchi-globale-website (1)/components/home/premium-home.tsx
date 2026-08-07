@@ -95,9 +95,17 @@ export function PremiumHome() {
   const { locale } = useCasaLocale()
   const t = c[locale]
   return <div className="overflow-hidden bg-[#07131f] text-[#f7f1e6]">
-    <section className="relative isolate min-h-[88svh] overflow-hidden border-b border-white/10">
-      <Image src="/images/casa-bernocchi-institutional.jpeg" alt="Casa Bernocchi institutional architecture" fill priority className="object-cover opacity-42 [filter:saturate(.65)_contrast(1.05)]" sizes="100vw" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(194,155,75,.2),transparent_34%),linear-gradient(90deg,#06111c_3%,rgba(6,17,28,.96)_44%,rgba(6,17,28,.52)_76%,rgba(6,17,28,.85))]" />
+    <section className="relative isolate min-h-[88svh] overflow-hidden border-b border-white/10 bg-[#061f1d]">
+      <Image
+        src="/images/greek-eros-relief.webp"
+        alt=""
+        aria-hidden="true"
+        fill
+        priority
+        className="object-cover object-[68%_center] opacity-[.30] grayscale [filter:sepia(.18)_saturate(.55)_contrast(1.1)]"
+        sizes="100vw"
+      />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_20%,rgba(194,155,75,.12),transparent_32%),linear-gradient(90deg,#061b19_2%,rgba(6,27,25,.97)_44%,rgba(6,27,25,.76)_76%,rgba(6,27,25,.88))]" />
       <div className="absolute inset-0 opacity-[.1] [background-image:linear-gradient(rgba(255,255,255,.13)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.13)_1px,transparent_1px)] [background-size:72px_72px]" />
       <div className="relative mx-auto flex min-h-[88svh] max-w-7xl items-center px-6 py-24 lg:px-10 lg:py-32"><div className="max-w-4xl">
         <div className="cb-rise inline-flex items-center gap-3 rounded-full border border-[#c9a85f]/35 bg-black/20 px-4 py-2 backdrop-blur-xl"><Sparkles className="size-3.5 text-[#d8bd7a]" /><span className="text-[.66rem] font-semibold uppercase tracking-[.24em] text-[#e6d09c]">{t.eyebrow}</span></div>
