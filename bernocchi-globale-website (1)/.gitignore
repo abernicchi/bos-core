@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Local environment and deployment state
+.env
+.env.*
+!.env.example
+.netlify/
+
+# OS and editor files
+.DS_Store
+*.swp

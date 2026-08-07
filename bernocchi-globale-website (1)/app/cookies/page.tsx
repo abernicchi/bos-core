@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function CookiesPage() {
   return (
-    <LegalLayout title="Cookie Policy" updated="2026">
+    <LegalLayout title="Cookie Policy" updated="7 August 2026">
       <LegalSection heading="What cookies are">
         <p>
           Cookies are small text files that websites store on your device for
@@ -29,19 +29,21 @@ export default function CookiesPage() {
 
       <LegalSection heading="Analytics and third-party cookies">
         <p>
-          Analytics and marketing tools (such as Google Analytics, Google Tag
-          Manager or Meta Pixel) are loaded only when the corresponding
-          configuration is enabled, and only after you have given consent where
-          required. Where none are configured, no profiling or advertising
-          trackers are installed.
+          With consent, the site creates a random browser identifier and sends a
+          limited set of journey events to our first-party analytics endpoint.
+          The identifier is pseudonymised before storage. Optional tools such as
+          Google Analytics, Google Tag Manager or Meta Pixel are loaded only when
+          configured and only after consent. Where none are configured, no
+          advertising tracker is installed.
         </p>
       </LegalSection>
 
       <LegalSection heading="Managing your preferences">
         <p>
           You can manage or withdraw consent through the banner shown on your
-          first visit and, at any time, through your browser settings, which
-          allow you to block or delete cookies already stored.
+          first visit. You may reset the decision by deleting the site data named
+          <code> cb-cookie-consent</code> in your browser, or block and delete
+          storage through your browser settings.
         </p>
       </LegalSection>
     </LegalLayout>

@@ -24,10 +24,9 @@ export function LegalLayout({ title, updated, children }: Props) {
       <div className="legal-body mt-10 space-y-8">{children}</div>
 
       <p className="mt-12 rounded-sm border border-border/60 bg-secondary p-5 text-sm leading-relaxed text-muted-foreground">
-        Note: this text is a template provided for informational purposes and
-        must be reviewed and adapted by a qualified legal professional before
-        final publication, according to the applicable jurisdictions (Italy and
-        Costa Rica).
+        Mandatory rights under applicable law prevail over any conflicting term.
+        For questions or to exercise a right, contact the Segreteria Generale
+        through the official details published on this site.
       </p>
     </article>
   )

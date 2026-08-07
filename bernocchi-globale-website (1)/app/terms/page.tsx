@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <LegalLayout title="Terms of Service" updated="2026">
+    <LegalLayout title="Terms of Service" updated="7 August 2026">
       <LegalSection heading="Who we are">
         <p>
           This website is operated by {site.legalName} ({site.name}),
@@ -24,10 +24,12 @@ export default function TermsPage() {
       <LegalSection heading="Bookings and payments">
         <p>
           Consultation fees are displayed in full before payment. Payments are
-          processed securely by Stripe. A booking is a request for an
-          appointment; the Segreteria Generale confirms the final date and time.
-          If a requested time cannot be honoured, we will offer an alternative or
-          a refund.
+          processed by the provider named on the private payment page, which may
+          be PayPal or an enabled local checkout. A submitted booking initially
+          creates a time-limited reservation. Successful payment confirms the
+          payment status; the Segreteria Generale sends the service instructions.
+          If the requested service cannot be provided, the customer may choose an
+          alternative time or a full refund to the original payment method.
         </p>
       </LegalSection>
 
@@ -40,9 +42,12 @@ export default function TermsPage() {
           >
             {site.email}
           </a>
-          . Refund eligibility depends on notice given and is confirmed in
-          writing. Specific cancellation windows will be published here before
-          launch.
+          . A cancellation received at least 24 hours before the confirmed start
+          time is eligible for rescheduling or a full refund. With less than 24
+          hours&apos; notice, the fee may be retained to cover the reserved
+          professional time, except where mandatory law or a documented emergency
+          requires another outcome. Approved refunds are returned to the original
+          method; the provider&apos;s settlement time may apply.
         </p>
       </LegalSection>
 
@@ -71,9 +76,11 @@ export default function TermsPage() {
 
       <LegalSection heading="Governing law">
         <p>
-          These terms are governed by the applicable laws of the relevant
-          jurisdictions in which the group operates. The definitive governing law
-          and venue will be confirmed by counsel before launch.
+          The contract for a professional service is governed by the mandatory
+          rules and the jurisdiction applicable to the entity and professional
+          identified in the written confirmation. Nothing in these terms limits
+          non-waivable consumer rights. The parties will first seek a good-faith
+          resolution through the Segreteria Generale.
         </p>
       </LegalSection>
     </LegalLayout>

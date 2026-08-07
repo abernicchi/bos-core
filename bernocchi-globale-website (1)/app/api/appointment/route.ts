@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server'
 import { sendEmail, SEGRETERIA_RECIPIENT } from '@/lib/email'
 import { consultationTypes } from '@/lib/content'
 import { normalizeLocale } from '@/lib/i18n'
+import {
+  createPaymentOrderForReservation,
+  expireStaleCheckoutHolds,
+  paymentIsAvailable,
+  paymentLinkFor,
+} from '@/lib/payments/orders'
 
 function clean(value: unknown, max = 500): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
@@ -52,6 +58,7 @@ async function persistReservation(data: {
   if (key.split('.').length === 3) headers.Authorization = `Bearer ${key}`
 
   try {
+    await expireStaleCheckoutHolds()
     const response = await fetch(`${url}/rest/v1/booking_reservations`, {
       method: 'POST',
       headers,
@@ -74,12 +81,13 @@ async function persistReservation(data: {
       }),
       cache: 'no-store',
     })
-    const result = await response.json().catch(() => null) as Array<{ reference_code?: string }> | { message?: string } | null
-    if (!response.ok) return { status: 'error' as const, detail: JSON.stringify(result) }
+    const result = await response.json().catch(() => null) as Array<{ id?: string; reference_code?: string }> | { message?: string } | null
+    if (!response.ok) return { status: 'error' as const, detail: JSON.stringify(result), responseStatus: response.status }
+    const reservationId = Array.isArray(result) ? result[0]?.id : undefined
     const referenceCode = Array.isArray(result) ? result[0]?.reference_code : undefined
-    return { status: 'saved' as const, referenceCode }
+    return { status: 'saved' as const, reservationId, referenceCode }
   } catch (error) {
-    return { status: 'error' as const, detail: String(error) }
+    return { status: 'error' as const, detail: String(error), responseStatus: 0 }
   }
 }
 
@@ -126,13 +134,37 @@ export async function POST(request: Request) {
   const databaseResult = await persistReservation({ consultationId, consultation, mode, language, fullName, email, whatsapp, country, date, time })
   if (databaseResult.status === 'error') {
     console.error('[Casa Bernocchi] Supabase reservation persistence failed:', databaseResult.detail)
+    const conflict = databaseResult.responseStatus === 409
+    return NextResponse.json(
+      {
+        error: conflict
+          ? 'The selected time is no longer available.'
+          : 'The reservation could not be registered.',
+      },
+      { status: conflict ? 409 : 502 },
+    )
   }
+
+  let paymentOrder: Awaited<ReturnType<typeof createPaymentOrderForReservation>>
+  if (databaseResult.status === 'saved' && databaseResult.reservationId) {
+    try {
+      paymentOrder = await createPaymentOrderForReservation(
+        databaseResult.reservationId,
+        consultationId,
+      )
+    } catch (error) {
+      console.error('[Casa Bernocchi] Payment order creation failed:', error)
+    }
+  }
+  const paymentAvailable = Boolean(paymentOrder && paymentIsAvailable(paymentOrder))
+  const paymentLink = paymentOrder && paymentAvailable ? paymentLinkFor(paymentOrder) : undefined
 
   const internalSummary = [
     'New appointment request — Bernocchi Health', '',
     `Reference: ${databaseResult.status === 'saved' ? databaseResult.referenceCode ?? 'generated' : 'email-only fallback'}`,
     `Consultation: ${consultation}`, `Mode: ${mode}`, `Requested date: ${date}`, `Requested time: ${time}`,
-    `Preferred language: ${language}`, `Payment method: pending`, `Payment status: pending`, '',
+    `Preferred language: ${language}`, `Payment method: ${paymentAvailable ? 'online link available' : 'pending'}`, `Payment status: pending`,
+    paymentLink && `Payment link: ${paymentLink}`, '',
     `Full name: ${fullName}`, `Email: ${email}`, `WhatsApp: ${whatsapp}`, `Country: ${country}`, '',
     'Note: no clinical information is collected through the website.',
   ].join('\n')
@@ -168,13 +200,17 @@ export async function POST(request: Request) {
 
   if (notifySegreteria.status === 'sent') {
     const patientText = [
-      confirmationCopy.title, '', confirmationCopy.body, confirmationCopy.payment, '',
+      confirmationCopy.title, '', confirmationCopy.body,
+      paymentAvailable
+        ? 'A private online payment link is available below. No charge is made until you complete the provider checkout.'
+        : confirmationCopy.payment,
+      paymentLink ? paymentLink : '', '',
       `Consultation: ${consultation}`, `Mode: ${mode}`, `Requested date: ${date}`,
       `Requested time: ${time}`,
       `Reference: ${databaseResult.status === 'saved' ? databaseResult.referenceCode ?? 'pending' : 'pending'}`,
       '', 'Casa Bernocchi · Segreteria Generale',
     ].join('\n')
-    const patientHtml = `<!doctype html><html lang="${language}"><body style="margin:0;background:#07131f;color:#f7f1e6;font-family:Arial,sans-serif"><div style="max-width:640px;margin:0 auto;padding:48px 24px"><p style="color:#c9a85f;letter-spacing:.18em;text-transform:uppercase;font-size:11px">Bernocchi Health</p><h1 style="font-family:Georgia,serif;font-weight:400;font-size:36px;line-height:1.15">${confirmationCopy.title}</h1><p style="color:rgba(255,255,255,.72);line-height:1.7">${confirmationCopy.body}</p><div style="margin:28px 0;padding:20px;border:1px solid rgba(201,168,95,.35);border-radius:16px;background:rgba(201,168,95,.08)"><strong style="color:#e2c77f">${confirmationCopy.payment}</strong></div><table style="width:100%;border-collapse:collapse;color:rgba(255,255,255,.72);font-size:14px"><tr><td style="padding:8px 0">${consultation}</td></tr><tr><td style="padding:8px 0">${mode} · ${date} · ${time}</td></tr><tr><td style="padding:8px 0">Reference: ${databaseResult.status === 'saved' ? databaseResult.referenceCode ?? 'pending' : 'pending'}</td></tr></table><p style="margin-top:36px;color:rgba(255,255,255,.42);font-size:12px">Casa Bernocchi · Segreteria Generale</p></div></body></html>`
+    const patientHtml = `<!doctype html><html lang="${language}"><body style="margin:0;background:#07131f;color:#f7f1e6;font-family:Arial,sans-serif"><div style="max-width:640px;margin:0 auto;padding:48px 24px"><p style="color:#c9a85f;letter-spacing:.18em;text-transform:uppercase;font-size:11px">Bernocchi Health</p><h1 style="font-family:Georgia,serif;font-weight:400;font-size:36px;line-height:1.15">${confirmationCopy.title}</h1><p style="color:rgba(255,255,255,.72);line-height:1.7">${confirmationCopy.body}</p><div style="margin:28px 0;padding:20px;border:1px solid rgba(201,168,95,.35);border-radius:16px;background:rgba(201,168,95,.08)"><strong style="color:#e2c77f">${paymentAvailable ? 'A private online payment link is ready.' : confirmationCopy.payment}</strong>${paymentLink ? `<p style="margin:18px 0 0"><a href="${paymentLink}" style="display:inline-block;border-radius:999px;background:#c9a85f;color:#07131f;padding:12px 20px;text-decoration:none;font-weight:700">Open secure payment</a></p>` : ''}</div><table style="width:100%;border-collapse:collapse;color:rgba(255,255,255,.72);font-size:14px"><tr><td style="padding:8px 0">${consultation}</td></tr><tr><td style="padding:8px 0">${mode} · ${date} · ${time}</td></tr><tr><td style="padding:8px 0">Reference: ${databaseResult.status === 'saved' ? databaseResult.referenceCode ?? 'pending' : 'pending'}</td></tr></table><p style="margin-top:36px;color:rgba(255,255,255,.42);font-size:12px">Casa Bernocchi · Segreteria Generale</p></div></body></html>`
     const patientConfirmation = await sendEmail({
       to: email,
       replyTo: SEGRETERIA_RECIPIENT,
@@ -185,5 +221,11 @@ export async function POST(request: Request) {
     if (patientConfirmation.status === 'error') console.error('[Casa Bernocchi] Patient confirmation failed:', patientConfirmation.detail)
   }
 
-  return NextResponse.json({ ok: true, referenceCode: databaseResult.status === 'saved' ? databaseResult.referenceCode : undefined, paymentMethod: 'pending', paymentStatus: 'pending' }, { status: 200 })
+  return NextResponse.json({
+    ok: true,
+    referenceCode: databaseResult.status === 'saved' ? databaseResult.referenceCode : undefined,
+    paymentToken: paymentAvailable ? paymentOrder?.public_token : undefined,
+    paymentMethod: paymentAvailable ? 'online' : 'pending',
+    paymentStatus: 'pending',
+  }, { status: 200 })
 }

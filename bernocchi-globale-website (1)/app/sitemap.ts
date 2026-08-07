@@ -1,11 +1,14 @@
 import type { MetadataRoute } from 'next'
 import { journalArticles, site } from '@/lib/content'
+import { ordines } from '@/lib/ordines'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     '',
     '/casa',
+    '/institutions',
     '/health',
+    '/payments',
     '/governance',
     '/founder',
     '/journal',
@@ -38,5 +41,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }))
 
-  return [...staticEntries, ...articleEntries]
+  const ordoEntries: MetadataRoute.Sitemap = ordines.map((ordo) => ({
+    url: `${site.url}/ordines/${ordo.slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: ordo.status === 'operating' ? 0.85 : 0.65,
+  }))
+
+  return [...staticEntries, ...ordoEntries, ...articleEntries]
 }

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { sendEmail, SEGRETERIA_RECIPIENT } from '@/lib/email'
 import { site } from '@/lib/content'
+import { getOrdoByCode } from '@/lib/ordines'
+import { isSupabaseConfigured, supabaseRequest } from '@/lib/supabase-rest'
 
 /**
  * Contact / inquiry endpoint for the Segreteria Generale.
@@ -53,6 +55,7 @@ export async function POST(request: Request) {
   const language = clean(payload.language, 10)
   const mode = clean(payload.mode, 20)
   const message = clean(payload.message, 2000)
+  const ordoCode = clean(payload.ordoCode, 40)
   const consent = payload.consent === 'yes' || payload.consent === true
 
   const errors: string[] = []
@@ -62,6 +65,7 @@ export async function POST(request: Request) {
   if (!consent) errors.push('consent')
   if (inquiryType && !ALLOWED_TYPES.includes(inquiryType))
     errors.push('inquiryType')
+  if (ordoCode && !getOrdoByCode(ordoCode)) errors.push('ordoCode')
 
   if (errors.length > 0) {
     return NextResponse.json(
@@ -78,23 +82,51 @@ export async function POST(request: Request) {
     inquiryType && `Type: ${inquiryType}`,
     language && `Language: ${language}`,
     mode && `Mode: ${mode}`,
+    ordoCode && `Ordo: ${ordoCode}`,
     '',
     message,
   ]
     .filter(Boolean)
     .join('\n')
 
+  let referenceCode: string | undefined
+  if (isSupabaseConfigured()) {
+    try {
+      const { data } = await supabaseRequest<string>(
+        'rpc/create_public_service_request',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            p_full_name: fullName,
+            p_email: email,
+            p_phone: phone,
+            p_country: country,
+            p_inquiry_type: inquiryType || 'institutional',
+            p_language: language || 'es',
+            p_mode: mode,
+            p_message: message,
+            p_ordo_code: ordoCode || null,
+          }),
+        },
+      )
+      referenceCode = data
+    } catch (error) {
+      console.error('[Casa Bernocchi] Inquiry persistence failed:', error)
+    }
+  }
+
   // 1) Notify the Segreteria Generale.
   const notify = await sendEmail({
     to: SEGRETERIA_RECIPIENT,
     replyTo: email,
-    subject: `New enquiry — ${inquiryType || 'general'} — ${fullName}`,
-    text: summary,
+    subject: `New enquiry — ${ordoCode || inquiryType || 'general'} — ${fullName}`,
+    text: `${referenceCode ? `Reference: ${referenceCode}\n\n` : ''}${summary}`,
   })
 
   if (notify.status === 'error') {
     console.error('[v0] Enquiry delivery failed:', notify.detail)
-    return NextResponse.json({ error: 'Delivery failed.' }, { status: 502 })
+    if (!referenceCode)
+      return NextResponse.json({ error: 'Delivery failed.' }, { status: 502 })
   }
 
   if (notify.status === 'skipped') {
@@ -112,6 +144,7 @@ export async function POST(request: Request) {
       'Thank you for contacting Casa Bernocchi. Our Segreteria Generale has received your message and will respond in due course.',
       '',
       'For reference, this is a copy of your enquiry:',
+      referenceCode ? `Reference: ${referenceCode}` : '',
       '',
       message,
       '',
@@ -131,5 +164,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true }, { status: 200 })
+  return NextResponse.json({ ok: true, referenceCode }, { status: 200 })
 }

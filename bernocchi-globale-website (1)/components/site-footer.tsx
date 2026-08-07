@@ -1,12 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { Globe2, Mail, MessageCircle, ShieldCheck } from 'lucide-react'
+import { Globe2, Mail, MessageCircle } from 'lucide-react'
 import { site, whatsappUrl } from '@/lib/content'
 import { Monogram } from '@/components/monogram'
 import { LanguageSelector } from '@/components/language-selector'
 import { useCasaLocale } from '@/components/use-casa-locale'
 import type { LocaleCode } from '@/lib/i18n'
+import { ordines } from '@/lib/ordines'
 
 const copy: Record<LocaleCode, {
   heritage: string
@@ -87,6 +88,9 @@ export function SiteFooter() {
             <ul className="mt-5 space-y-3 text-sm text-white/64">
               <li><Link href="/health" className="transition hover:text-[#c9a85f]">{t.health}</Link></li>
               <li><Link href="/institutions" className="transition hover:text-[#c9a85f]">{t.institutions}</Link></li>
+              {ordines.filter((ordo) => ordo.slug !== 'medicinae').map((ordo) => (
+                <li key={ordo.slug}><Link href={`/ordines/${ordo.slug}`} className="transition hover:text-[#c9a85f]">{ordo.order}</Link></li>
+              ))}
               <li><a href={`mailto:${site.email}`} className="inline-flex items-center gap-2 text-[#d8bd7a] hover:text-[#ead49f]"><Mail className="size-4" />{site.email}</a></li>
               <li><a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 transition hover:text-[#c9a85f]"><MessageCircle className="size-4" />{site.phoneDisplay}</a></li>
             </ul>
@@ -112,6 +116,7 @@ export function SiteFooter() {
             <li><Link href="/cookies" className="hover:text-[#c9a85f]">{t.cookies}</Link></li>
             <li><Link href="/terms" className="hover:text-[#c9a85f]">{t.terms}</Link></li>
             <li><Link href="/medical-disclaimer" className="hover:text-[#c9a85f]">{t.disclaimer}</Link></li>
+            <li><Link href="/payments" className="hover:text-[#c9a85f]">Pagos</Link></li>
           </ul>
         </div>
       </div>

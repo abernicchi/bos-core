@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <LegalLayout title="Privacy Policy" updated="2026">
+    <LegalLayout title="Privacy Policy" updated="7 August 2026">
       <LegalSection heading="Data controller">
         <p>
           The data controller is {site.legalName} ({site.name}), headquartered
@@ -49,9 +49,32 @@ export default function PrivacyPage() {
 
       <LegalSection heading="Payments">
         <p>
-          Payments are processed by Stripe. Card details are handled directly by
-          Stripe and are never stored on our servers. Stripe acts as an
-          independent processor under its own terms and privacy policy.
+          Online payments may be processed by PayPal or by an expressly
+          identified local checkout provider such as ONVO. We store the payment
+          order, provider reference, status, currency and amount required for
+          reconciliation. Card and wallet credentials are collected by the
+          provider and are never sent to or stored on our servers. Each provider
+          also processes data under its own privacy notice and terms.
+        </p>
+      </LegalSection>
+
+      <LegalSection heading="Service providers">
+        <p>
+          We use infrastructure and communications providers to host the site,
+          store operational records and deliver confirmations. Access is limited
+          to what is necessary for the relevant function and is protected by
+          contractual and technical safeguards. Providers may include Netlify,
+          Supabase, Resend, PayPal and ONVO when their corresponding function is
+          enabled.
+        </p>
+      </LegalSection>
+
+      <LegalSection heading="Pseudonymous statistics">
+        <p>
+          With consent, we record a limited set of journey events such as page
+          views, enquiry completion and payment completion. The browser identifier
+          is transformed with a secret one-way hash before storage. These events
+          contain no clinical information, payment credentials or message text.
         </p>
       </LegalSection>
 

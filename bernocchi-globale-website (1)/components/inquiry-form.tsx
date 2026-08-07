@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { Check, Loader2 } from 'lucide-react'
 import {
   consultationModes,
@@ -9,6 +9,7 @@ import {
   type InquiryType,
 } from '@/lib/content'
 import { cn } from '@/lib/utils'
+import { trackEvent } from '@/lib/analytics-events'
 
 const fieldClass =
   'w-full rounded-sm border border-input bg-card px-3.5 py-2.5 text-sm text-card-foreground placeholder:text-muted-foreground/70 transition-colors focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold'
@@ -21,6 +22,8 @@ type Props = {
   lockType?: boolean
   /** Restrict selectable inquiry types. */
   allowedTypes?: InquiryType[]
+  /** Route the enquiry to one of the canonical Ordines. */
+  ordoCode?: string
   className?: string
 }
 
@@ -28,12 +31,14 @@ export function InquiryForm({
   defaultType = 'institutional',
   lockType = false,
   allowedTypes,
+  ordoCode,
   className,
 }: Props) {
   const [status, setStatus] = useState<
     'idle' | 'submitting' | 'success' | 'error'
   >('idle')
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const journeyStarted = useRef(false)
 
   const typeOptions = allowedTypes
     ? inquiryTypes.filter((t) => allowedTypes.includes(t.value))
@@ -65,6 +70,7 @@ export function InquiryForm({
       })
       if (!res.ok) throw new Error('Request failed')
       setStatus('success')
+      trackEvent('inquiry_submit', { ordoCode })
       form.reset()
     } catch {
       setStatus('error')
@@ -97,9 +103,24 @@ export function InquiryForm({
   return (
     <form
       onSubmit={handleSubmit}
+      onFocusCapture={() => {
+        if (!journeyStarted.current) {
+          journeyStarted.current = true
+          trackEvent('ordo_inquiry_start', { ordoCode })
+        }
+      }}
       noValidate
       className={cn('space-y-5', className)}
     >
+      {ordoCode ? <input type="hidden" name="ordoCode" value={ordoCode} /> : null}
+      <input
+        type="text"
+        name="company"
+        tabIndex={-1}
+        autoComplete="off"
+        className="sr-only"
+        aria-hidden="true"
+      />
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="fullName" className={labelClass}>

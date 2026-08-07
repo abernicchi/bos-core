@@ -22,7 +22,7 @@ const labels: Record<LocaleCode, {
   es: {
     skip: 'Saltar al contenido', home: 'inicio', menu: 'Abrir menú', close: 'Cerrar menú', book: 'Solicitar cita',
     navigation: [
-      { label: 'La Casa', href: '/casa' }, { label: 'Instituciones', href: '/institutions' },
+      { label: 'La Casa', href: '/casa' }, { label: 'Ordines', href: '/institutions' },
       { label: 'Fundador', href: '/founder' }, { label: 'Salud', href: '/health' },
       { label: 'Journal', href: '/journal' }, { label: 'Gobernanza', href: '/governance' },
       { label: 'Contacto', href: '/contact' },
@@ -31,7 +31,7 @@ const labels: Record<LocaleCode, {
   en: {
     skip: 'Skip to content', home: 'home', menu: 'Open menu', close: 'Close menu', book: 'Request appointment',
     navigation: [
-      { label: 'The House', href: '/casa' }, { label: 'Institutions', href: '/institutions' },
+      { label: 'The House', href: '/casa' }, { label: 'Ordines', href: '/institutions' },
       { label: 'Founder', href: '/founder' }, { label: 'Health', href: '/health' },
       { label: 'Journal', href: '/journal' }, { label: 'Governance', href: '/governance' },
       { label: 'Contact', href: '/contact' },
@@ -40,7 +40,7 @@ const labels: Record<LocaleCode, {
   it: {
     skip: 'Vai al contenuto', home: 'home', menu: 'Apri menu', close: 'Chiudi menu', book: 'Richiedi appuntamento',
     navigation: [
-      { label: 'La Casa', href: '/casa' }, { label: 'Istituzioni', href: '/institutions' },
+      { label: 'La Casa', href: '/casa' }, { label: 'Ordines', href: '/institutions' },
       { label: 'Fondatore', href: '/founder' }, { label: 'Salute', href: '/health' },
       { label: 'Journal', href: '/journal' }, { label: 'Governance', href: '/governance' },
       { label: 'Contatti', href: '/contact' },
@@ -49,7 +49,7 @@ const labels: Record<LocaleCode, {
   fr: {
     skip: 'Aller au contenu', home: 'accueil', menu: 'Ouvrir le menu', close: 'Fermer le menu', book: 'Demander un rendez-vous',
     navigation: [
-      { label: 'La Maison', href: '/casa' }, { label: 'Institutions', href: '/institutions' },
+      { label: 'La Maison', href: '/casa' }, { label: 'Ordines', href: '/institutions' },
       { label: 'Fondateur', href: '/founder' }, { label: 'Santé', href: '/health' },
       { label: 'Journal', href: '/journal' }, { label: 'Gouvernance', href: '/governance' },
       { label: 'Contact', href: '/contact' },
@@ -58,7 +58,7 @@ const labels: Record<LocaleCode, {
   de: {
     skip: 'Zum Inhalt', home: 'Startseite', menu: 'Menü öffnen', close: 'Menü schließen', book: 'Termin anfragen',
     navigation: [
-      { label: 'Das Haus', href: '/casa' }, { label: 'Institutionen', href: '/institutions' },
+      { label: 'Das Haus', href: '/casa' }, { label: 'Ordines', href: '/institutions' },
       { label: 'Gründer', href: '/founder' }, { label: 'Gesundheit', href: '/health' },
       { label: 'Journal', href: '/journal' }, { label: 'Governance', href: '/governance' },
       { label: 'Kontakt', href: '/contact' },
@@ -67,7 +67,7 @@ const labels: Record<LocaleCode, {
   ca: {
     skip: 'Vés al contingut', home: 'inici', menu: 'Obre el menú', close: 'Tanca el menú', book: 'Sol·licitar cita',
     navigation: [
-      { label: 'La Casa', href: '/casa' }, { label: 'Institucions', href: '/institutions' },
+      { label: 'La Casa', href: '/casa' }, { label: 'Ordines', href: '/institutions' },
       { label: 'Fundador', href: '/founder' }, { label: 'Salut', href: '/health' },
       { label: 'Journal', href: '/journal' }, { label: 'Governança', href: '/governance' },
       { label: 'Contacte', href: '/contact' },
@@ -76,7 +76,7 @@ const labels: Record<LocaleCode, {
   zh: {
     skip: '跳到内容', home: '主页', menu: '打开菜单', close: '关闭菜单', book: '申请预约',
     navigation: [
-      { label: '家族机构', href: '/casa' }, { label: '机构', href: '/institutions' },
+      { label: '家族机构', href: '/casa' }, { label: 'Ordines', href: '/institutions' },
       { label: '创始人', href: '/founder' }, { label: '健康', href: '/health' },
       { label: '期刊', href: '/journal' }, { label: '治理', href: '/governance' },
       { label: '联系', href: '/contact' },
@@ -85,7 +85,7 @@ const labels: Record<LocaleCode, {
   pl: {
     skip: 'Przejdź do treści', home: 'strona główna', menu: 'Otwórz menu', close: 'Zamknij menu', book: 'Poproś o wizytę',
     navigation: [
-      { label: 'Dom', href: '/casa' }, { label: 'Instytucje', href: '/institutions' },
+      { label: 'Dom', href: '/casa' }, { label: 'Ordines', href: '/institutions' },
       { label: 'Założyciel', href: '/founder' }, { label: 'Zdrowie', href: '/health' },
       { label: 'Journal', href: '/journal' }, { label: 'Ład', href: '/governance' },
       { label: 'Kontakt', href: '/contact' },
@@ -94,7 +94,7 @@ const labels: Record<LocaleCode, {
   ru: {
     skip: 'Перейти к содержанию', home: 'главная', menu: 'Открыть меню', close: 'Закрыть меню', book: 'Запросить приём',
     navigation: [
-      { label: 'Дом', href: '/casa' }, { label: 'Институты', href: '/institutions' },
+      { label: 'Дом', href: '/casa' }, { label: 'Ordines', href: '/institutions' },
       { label: 'Основатель', href: '/founder' }, { label: 'Здоровье', href: '/health' },
       { label: 'Журнал', href: '/journal' }, { label: 'Управление', href: '/governance' },
       { label: 'Контакты', href: '/contact' },
@@ -103,7 +103,7 @@ const labels: Record<LocaleCode, {
   ja: {
     skip: 'コンテンツへ移動', home: 'ホーム', menu: 'メニューを開く', close: 'メニューを閉じる', book: '予約を申し込む',
     navigation: [
-      { label: 'カーサ', href: '/casa' }, { label: '機関', href: '/institutions' },
+      { label: 'カーサ', href: '/casa' }, { label: 'Ordines', href: '/institutions' },
       { label: '創設者', href: '/founder' }, { label: 'ヘルス', href: '/health' },
       { label: 'ジャーナル', href: '/journal' }, { label: 'ガバナンス', href: '/governance' },
       { label: 'お問い合わせ', href: '/contact' },
@@ -114,7 +114,7 @@ const labels: Record<LocaleCode, {
 export function SiteHeader() {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [openForPath, setOpenForPath] = useState<string | null>(null)
   const { locale } = useCasaLocale()
   const copy = labels[locale]
 
@@ -125,7 +125,7 @@ export function SiteHeader() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => setMobileOpen(false), [pathname])
+  const mobileOpen = openForPath === pathname
 
   return (
     <header
@@ -167,7 +167,7 @@ export function SiteHeader() {
           <button
             type="button"
             className="inline-flex size-10 items-center justify-center rounded-full border border-white/15 text-white transition hover:border-gold/60 hover:text-gold xl:hidden"
-            onClick={() => setMobileOpen((value) => !value)}
+            onClick={() => setOpenForPath((value) => value === pathname ? null : pathname)}
             aria-label={mobileOpen ? copy.close : copy.menu}
             aria-expanded={mobileOpen}
           >
@@ -181,7 +181,7 @@ export function SiteHeader() {
           <nav className="mx-auto max-w-7xl px-5 py-5" aria-label="Mobile navigation">
             <div className="grid gap-1 sm:grid-cols-2">
               {copy.navigation.map((item) => (
-                <Link key={item.href} href={item.href} className="rounded-xl border border-transparent px-4 py-3 text-sm text-white/82 transition hover:border-gold/25 hover:bg-white/5 hover:text-gold">
+                <Link key={item.href} href={item.href} onClick={() => setOpenForPath(null)} className="rounded-xl border border-transparent px-4 py-3 text-sm text-white/82 transition hover:border-gold/25 hover:bg-white/5 hover:text-gold">
                   {item.label}
                 </Link>
               ))}
