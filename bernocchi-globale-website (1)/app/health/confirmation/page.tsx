@@ -5,7 +5,7 @@ import { site, bookingWhatsappUrl } from '@/lib/content'
 
 export const metadata: Metadata = {
   title: 'Solicitud recibida — Bernocchi Health',
-  description: 'La solicitud de cita fue recibida y se encuentra en reserva provisional con método de pago pendiente.',
+  description: 'La solicitud de cita fue recibida y se encuentra en reserva provisional.',
   robots: { index: false, follow: false },
   alternates: { canonical: '/health/confirmation' },
 }
@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 export default async function AppointmentConfirmationPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ref?: string }>
+  searchParams: Promise<{ ref?: string; pay?: string }>
 }) {
-  const { ref } = await searchParams
+  const { ref, pay } = await searchParams
 
   return (
     <section className="min-h-[75svh] border-t border-white/10 bg-[#07131f] py-20 text-[#f7f1e6] md:py-28">
@@ -38,11 +38,16 @@ export default async function AppointmentConfirmationPage({
 
         <div className="mx-auto mt-12 grid max-w-3xl gap-4 text-left md:grid-cols-3">
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-6"><Clock3 className="size-5 text-[#c9a85f]" /><h2 className="mt-6 font-serif text-xl">Reserva provisional</h2><p className="mt-3 text-sm leading-6 text-white/48">La selección todavía no constituye una cita confirmada.</p></article>
-          <article className="rounded-2xl border border-[#c9a85f]/28 bg-[#c9a85f]/7 p-6"><CreditCard className="size-5 text-[#c9a85f]" /><h2 className="mt-6 font-serif text-xl">Pago pendiente</h2><p className="mt-3 text-sm leading-6 text-white/48">No se realizó ningún cobro. La Segreteria asignará el método aplicable.</p></article>
+          <article className="rounded-2xl border border-[#c9a85f]/28 bg-[#c9a85f]/7 p-6"><CreditCard className="size-5 text-[#c9a85f]" /><h2 className="mt-6 font-serif text-xl">{pay ? 'Pago disponible' : 'Pago pendiente'}</h2><p className="mt-3 text-sm leading-6 text-white/48">{pay ? 'No se realizó ningún cobro. Puede completar el pago en el enlace privado.' : 'No se realizó ningún cobro. La Segreteria asignará el método aplicable.'}</p></article>
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-6"><Mail className="size-5 text-[#c9a85f]" /><h2 className="mt-6 font-serif text-xl">Confirmación directa</h2><p className="mt-3 text-sm leading-6 text-white/48">Recibirá una comunicación con los detalles definitivos y las condiciones.</p></article>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        {pay ? (
+          <div className="mt-10">
+            <Link href={`/pay/${pay}`} className="inline-flex items-center gap-2 rounded-full bg-[#c9a85f] px-7 py-3.5 text-sm font-semibold text-[#07131f] transition hover:bg-[#dfc47f]"><CreditCard className="size-4" />Abrir pago seguro<ArrowRight className="size-4" /></Link>
+          </div>
+        ) : null}
+        <div className={`${pay ? 'mt-5' : 'mt-10'} flex flex-col items-center justify-center gap-3 sm:flex-row`}>
           <a href={bookingWhatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[#c9a85f] px-6 py-3 text-sm font-semibold text-[#07131f] transition hover:bg-[#dfc47f]"><MessageCircle className="size-4" />Contactar por WhatsApp</a>
           <a href={`mailto:${site.email}`} className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white transition hover:border-[#c9a85f] hover:text-[#e2c77f]"><Mail className="size-4" />Escribir a la Segreteria</a>
         </div>

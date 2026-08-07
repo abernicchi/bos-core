@@ -24,6 +24,7 @@ import { bookingTimeSlots, consultationTypes } from '@/lib/content'
 import { casaLocales, type LocaleCode } from '@/lib/i18n'
 import { useCasaLocale } from '@/components/use-casa-locale'
 import { cn } from '@/lib/utils'
+import { trackEvent } from '@/lib/analytics-events'
 
 type CountryOption = { iso: string; name: string; dial: string }
 type Booking = {
@@ -168,7 +169,6 @@ export function BookingFlow({ initialConsultationId }: { initialConsultationId?:
     consultationId: initialConsultationId ?? '', mode: '', firstName: '', lastName: '', email: '', whatsapp: '', phoneCountryIso: 'CR', country: 'Costa Rica', language: locale, date: '', time: '', consent: false,
   })
 
-  useEffect(() => setBooking((current) => ({ ...current, language: locale })), [locale])
   useEffect(() => {
     function close(event: PointerEvent) {
       if (!countryMenuRef.current?.contains(event.target as Node)) setCountryOpen(false)
@@ -189,6 +189,7 @@ export function BookingFlow({ initialConsultationId }: { initialConsultationId?:
   const detailsValid = booking.firstName.trim().length > 1 && booking.lastName.trim().length > 1 && EMAIL_RE.test(booking.email.trim()) && digits(booking.whatsapp).length >= 6 && booking.date >= todayISO() && Boolean(booking.time) && booking.consent
 
   function chooseService(id: string) {
+    if (!booking.consultationId) trackEvent('booking_start', { serviceCode: id, ordoCode: 'ordo_medicinae' })
     setBooking((current) => ({ ...current, consultationId: id }))
     setError(null)
     window.setTimeout(() => setStep(1), 170)
@@ -221,10 +222,21 @@ export function BookingFlow({ initialConsultationId }: { initialConsultationId?:
           company: '', website: '',
         }),
       })
-      const result = await response.json().catch(() => ({})) as { referenceCode?: string; error?: string }
+      const result = await response.json().catch(() => ({})) as {
+        referenceCode?: string
+        paymentToken?: string
+        error?: string
+      }
       if (!response.ok) throw new Error(result.error || 'Request failed')
-      const reference = result.referenceCode ? `?ref=${encodeURIComponent(result.referenceCode)}` : ''
-      router.push(`/health/confirmation${reference}`)
+      trackEvent('booking_submit', {
+        serviceCode: booking.consultationId,
+        ordoCode: 'ordo_medicinae',
+      })
+      const confirmationParams = new URLSearchParams()
+      if (result.referenceCode) confirmationParams.set('ref', result.referenceCode)
+      if (result.paymentToken) confirmationParams.set('pay', result.paymentToken)
+      const query = confirmationParams.size ? `?${confirmationParams.toString()}` : ''
+      router.push(`/health/confirmation${query}`)
     } catch (submissionError) {
       console.error('[Casa Bernocchi] Booking submission error:', submissionError)
       setError(t.error)
@@ -254,7 +266,7 @@ export function BookingFlow({ initialConsultationId }: { initialConsultationId?:
             {consultationTypes.map((item) => {
               const selected = booking.consultationId === item.id
               return <button key={item.id} type="button" onClick={() => chooseService(item.id)} className={cn('group relative min-h-40 rounded-2xl border p-5 text-left transition duration-300 hover:-translate-y-1', selected ? 'border-[#c9a85f] bg-[#c9a85f]/12' : 'border-white/10 bg-white/[0.035] hover:border-[#c9a85f]/45 hover:bg-white/[0.06]')}>
-                <span className="text-[0.6rem] uppercase tracking-[0.2em] text-[#c9a85f]">{item.duration}</span><h4 className="mt-5 font-serif text-xl text-white">{serviceNames[locale][item.id] ?? item.name}</h4><ArrowRight className="absolute bottom-5 right-5 size-4 text-white/28 transition group-hover:translate-x-1 group-hover:text-[#c9a85f]" />
+                <div className="flex items-center justify-between gap-3"><span className="text-[0.6rem] uppercase tracking-[0.2em] text-[#c9a85f]">{item.duration}</span><span className="text-xs font-medium text-white/58">{new Intl.NumberFormat(locale, { style: 'currency', currency: item.currency.toUpperCase() }).format(item.priceInCents / 100)}</span></div><h4 className="mt-5 font-serif text-xl text-white">{serviceNames[locale][item.id] ?? item.name}</h4><ArrowRight className="absolute bottom-5 right-5 size-4 text-white/28 transition group-hover:translate-x-1 group-hover:text-[#c9a85f]" />
               </button>
             })}
           </div></fieldset>

@@ -53,7 +53,7 @@ export const offices = [
 /** Primary navigation used in the global header. */
 export const navigation = [
   { label: 'Casa', href: '/casa' },
-  { label: 'Institutions', href: '/institutions' },
+  { label: 'Ordines', href: '/institutions' },
   { label: 'Founder', href: '/founder' },
   { label: 'Health', href: '/health' },
   { label: 'Journal', href: '/journal' },
@@ -85,7 +85,7 @@ export const institutions: Institution[] = [
     slug: 'health',
     status: 'operating',
     order: 'Ordo Medicinae',
-    href: '/health',
+    href: '/ordines/medicinae',
     summary:
       'Professional care with institutional standards: clinical psychology, sexology, couples therapy and behavioural neuroscience.',
   },
@@ -94,6 +94,7 @@ export const institutions: Institution[] = [
     slug: 'legal',
     status: 'development',
     order: 'Ordo Iuris',
+    href: '/ordines/iuris',
     summary:
       'Legal counsel and institutional governance. Currently in development.',
   },
@@ -101,7 +102,8 @@ export const institutions: Institution[] = [
     name: 'Bernocchi Research Institute',
     slug: 'research',
     status: 'development',
-    order: 'Ordo Scientiae',
+    order: 'Ordo Scientia',
+    href: '/ordines/scientia',
     summary:
       'Research, neuroscience and the production of verified knowledge. Currently in development.',
   },
@@ -109,7 +111,8 @@ export const institutions: Institution[] = [
     name: 'Bernocchi Digital',
     slug: 'digital',
     status: 'development',
-    order: 'Ordo Innovationis',
+    order: 'Ordo Innovatio',
+    href: '/ordines/innovatio',
     summary:
       'Technology, artificial intelligence and digital systems. Currently in development.',
   },
@@ -118,6 +121,7 @@ export const institutions: Institution[] = [
     slug: 'academy',
     status: 'planned',
     order: 'Ordo Humanitatis',
+    href: '/ordines/humanitatis',
     summary: 'Education, culture and human development. Planned institution.',
   },
   {
@@ -125,6 +129,7 @@ export const institutions: Institution[] = [
     slug: 'capital',
     status: 'planned',
     order: 'Ordo Capitalis',
+    href: '/ordines/capitalis',
     summary:
       'Investment analysis and enterprise development. Planned institution.',
   },
@@ -409,15 +414,16 @@ export const consultationModes = [
 /**
  * CONSULTATION TYPES — booking request flow
  * ------------------------------------------
- * These are the consultations a visitor can request an appointment for.
- * The current flow captures a *request* (no payment). Prices are intentionally
- * omitted here and confirmed by the Segreteria Generale after review.
+ * These are the consultations a visitor can request and pay for online.
+ * Amounts are server-owned and must never be accepted from client input.
  */
 export type ConsultationType = {
   id: string
   name: string
   description: string
   duration: string
+  priceInCents: number
+  currency: 'eur'
 }
 
 export const consultationTypes: ConsultationType[] = [
@@ -427,6 +433,8 @@ export const consultationTypes: ConsultationType[] = [
     description:
       'Professional, discreet clinical support for sexual health and wellbeing.',
     duration: '50 minutes',
+    priceInCents: 13000,
+    currency: 'eur',
   },
   {
     id: 'couples-therapy',
@@ -434,6 +442,8 @@ export const consultationTypes: ConsultationType[] = [
     description:
       'Guided sessions to rebuild communication, trust and connection between partners.',
     duration: '60 minutes',
+    priceInCents: 15000,
+    currency: 'eur',
   },
   {
     id: 'mens-sexual-health',
@@ -441,6 +451,8 @@ export const consultationTypes: ConsultationType[] = [
     description:
       'Focused, confidential consultation addressing male sexual health concerns.',
     duration: '50 minutes',
+    priceInCents: 13000,
+    currency: 'eur',
   },
   {
     id: 'womens-sexual-health',
@@ -448,6 +460,8 @@ export const consultationTypes: ConsultationType[] = [
     description:
       'Focused, confidential consultation addressing female sexual health concerns.',
     duration: '50 minutes',
+    priceInCents: 13000,
+    currency: 'eur',
   },
   {
     id: 'online-consultation',
@@ -455,6 +469,8 @@ export const consultationTypes: ConsultationType[] = [
     description:
       'Secure video consultation available internationally, subject to eligibility.',
     duration: '50 minutes',
+    priceInCents: 11000,
+    currency: 'eur',
   },
   {
     id: 'executive-consultation',
@@ -462,6 +478,8 @@ export const consultationTypes: ConsultationType[] = [
     description:
       'An extended, priority consultation pathway for demanding schedules.',
     duration: '80 minutes',
+    priceInCents: 24000,
+    currency: 'eur',
   },
 ]
 

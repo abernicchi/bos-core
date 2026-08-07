@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useSyncExternalStore } from 'react'
 import {
   CASA_LOCALE_EVENT,
   CASA_LOCALE_STORAGE_KEY,
@@ -14,32 +14,31 @@ function applyDocumentLocale(locale: LocaleCode) {
   document.documentElement.dir = 'ltr'
 }
 
+function subscribe(onStoreChange: () => void) {
+  window.addEventListener(CASA_LOCALE_EVENT, onStoreChange)
+  return () => window.removeEventListener(CASA_LOCALE_EVENT, onStoreChange)
+}
+
+function clientSnapshot() {
+  const stored = window.localStorage.getItem(CASA_LOCALE_STORAGE_KEY)
+  return normalizeLocale(stored ?? window.navigator.language)
+}
+
+function serverSnapshot(): LocaleCode {
+  return DEFAULT_LOCALE
+}
+
 export function useCasaLocale() {
-  const [locale, setLocale] = useState<LocaleCode>(DEFAULT_LOCALE)
+  const locale = useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot)
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(CASA_LOCALE_STORAGE_KEY)
-    const browserLocale = window.navigator.language
-    const initial = normalizeLocale(stored ?? browserLocale)
-    setLocale(initial)
-    applyDocumentLocale(initial)
-
-    function onLocaleChange(event: Event) {
-      const detail = (event as CustomEvent<{ locale?: string }>).detail
-      const next = normalizeLocale(detail?.locale)
-      setLocale(next)
-      applyDocumentLocale(next)
-    }
-
-    window.addEventListener(CASA_LOCALE_EVENT, onLocaleChange)
-    return () => window.removeEventListener(CASA_LOCALE_EVENT, onLocaleChange)
-  }, [])
+    applyDocumentLocale(locale)
+  }, [locale])
 
   const changeLocale = useCallback((nextValue: string) => {
     const next = normalizeLocale(nextValue)
     window.localStorage.setItem(CASA_LOCALE_STORAGE_KEY, next)
     applyDocumentLocale(next)
-    setLocale(next)
     window.dispatchEvent(
       new CustomEvent(CASA_LOCALE_EVENT, { detail: { locale: next } }),
     )

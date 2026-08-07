@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  createElement,
   useEffect,
   useRef,
   type CSSProperties,
@@ -64,15 +63,18 @@ export function Reveal({
     return () => observer.disconnect()
   }, [])
 
-  return createElement(
-    as,
-    {
-      ref,
-      className: cn(variant === 'line' ? 'reveal-line' : 'reveal-up', className),
-      style: delay
-        ? ({ '--reveal-delay': `${delay}s` } as CSSProperties)
-        : undefined,
-    },
-    children,
+  const Tag = as
+  return (
+    <Tag
+      ref={ref as React.Ref<never>}
+      className={cn(variant === 'line' ? 'reveal-line' : 'reveal-up', className)}
+      style={
+        delay
+          ? ({ '--reveal-delay': `${delay}s` } as CSSProperties)
+          : undefined
+      }
+    >
+      {children}
+    </Tag>
   )
 }

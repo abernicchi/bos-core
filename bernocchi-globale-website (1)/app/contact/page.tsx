@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Building2, Globe2, Mail, MapPin, MessageCircle, Phone, ShieldCheck } from 'lucide-react'
 import { InquiryForm } from '@/components/inquiry-form'
 import { site, whatsappUrl } from '@/lib/content'
+import { getOrdoByCode } from '@/lib/ordines'
 
 export const metadata: Metadata = {
   title: 'Contacto — Segreteria Generale · Casa Bernocchi',
@@ -21,7 +22,13 @@ const locations = [
   { city: 'New York · Hong Kong', country: 'Estados Unidos y China', flag: '🇺🇸 🇭🇰', status: 'Mercados estratégicos', detail: 'Proyección transatlántica y asiática' },
 ]
 
-export default function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ordo?: string }>
+}) {
+  const { ordo: requestedOrdo } = await searchParams
+  const selectedOrdo = requestedOrdo ? getOrdoByCode(requestedOrdo) : undefined
   return (
     <>
       <section className="border-b border-white/10 bg-[#07131f] text-[#f7f1e6]">
@@ -60,11 +67,18 @@ export default function ContactPage() {
 
           <div className="rounded-[2rem] border border-[#07131f]/10 bg-white/62 p-6 shadow-[0_24px_80px_rgba(7,19,31,.06)] sm:p-8">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#a3823e]">Solicitud institucional</p>
-            <h2 className="mt-4 font-serif text-3xl">Escribir a la Casa</h2>
+            <h2 className="mt-4 font-serif text-3xl">
+              {selectedOrdo ? `Escribir a ${selectedOrdo.order}` : 'Escribir a la Casa'}
+            </h2>
             <p className="mt-3 text-sm leading-7 text-[#07131f]/54">
               La Segreteria dirigirá el mensaje al órgano correspondiente. No incluya información clínica, financiera o sensible en este formulario general.
             </p>
-            <div className="mt-7"><InquiryForm /></div>
+            <div className="mt-7">
+              <InquiryForm
+                ordoCode={selectedOrdo?.code}
+                defaultType={selectedOrdo?.slug === 'scientia' ? 'research' : 'institutional'}
+              />
+            </div>
           </div>
         </div>
       </section>

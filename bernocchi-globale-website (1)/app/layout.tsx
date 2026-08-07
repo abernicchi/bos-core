@@ -1,5 +1,3 @@
-import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
-import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata, Viewport } from 'next'
 import { Cormorant_Garamond, Inter } from 'next/font/google'
 import { site, healthServices } from '@/lib/content'
@@ -7,7 +5,7 @@ import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { CookieConsent } from '@/components/cookie-consent'
 import { WhatsAppFloat } from '@/components/whatsapp-float'
-import { Analytics, GtmNoScript } from '@/components/analytics'
+import { Analytics } from '@/components/analytics'
 import './globals.css'
 
 const inter = Inter({
@@ -33,11 +31,14 @@ export const metadata: Metadata = {
   },
   description: site.description,
   applicationName: site.name,
-  generator: 'v0.app',
   keywords: [
     'Casa Bernocchi',
     'Bernocchi Globale Holdings',
     'Bernocchi Health',
+    'Ordo Medicinae',
+    'Ordo Iuris',
+    'Ordo Scientia',
+    'Ordo Innovatio',
     'clinical psychology',
     'couples therapy',
     'sexology',
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
-    locale: 'en_GB',
+    locale: 'es_CR',
     url: site.url,
     siteName: site.name,
     title: `${site.name} — Italian excellence, built to endure`,
@@ -98,11 +99,6 @@ export default function RootLayout({
     description: site.description,
     email: site.email,
     telephone: site.phoneDisplay,
-    foundingDate: '2026',
-    foundingLocation: {
-      '@type': 'Country',
-      name: 'Italy',
-    },
     address: [
       {
         '@type': 'PostalAddress',
@@ -120,8 +116,7 @@ export default function RootLayout({
       url: `${site.url}/health`,
       email: site.email,
       telephone: site.phoneDisplay,
-      areaServed: ['IT', 'CR', 'Worldwide'],
-      availableLanguage: ['en', 'it', 'es'],
+      availableLanguage: ['es', 'en', 'it', 'fr', 'de', 'ca', 'zh', 'pl', 'ru', 'ja'],
       makesOffer: healthServices.map((s) => ({
         '@type': 'Offer',
         name: s.name,
@@ -134,11 +129,10 @@ export default function RootLayout({
 
   return (
     <html
-      lang="en"
+      lang="es"
       className={`${inter.variable} ${cormorant.variable} bg-background`}
     >
       <body>
-        <GtmNoScript />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -151,9 +145,7 @@ export default function RootLayout({
         <WhatsAppFloat />
         <CookieConsent />
         <Analytics />
-        {process.env.NODE_ENV === 'production' && <VercelAnalytics />}
       </body>
-      <GoogleAnalytics gaId="G-64BSR9K9LW" />
     </html>
   )
 }

@@ -1,20 +1,32 @@
-import Script from 'next/script'
+'use client'
 
-/**
- * Analytics & marketing tags — all gated behind environment variables.
- * Nothing loads unless the corresponding ID is set, so the site ships clean.
- *
- *   NEXT_PUBLIC_GA_MEASUREMENT_ID   Google Analytics 4 (G-XXXXXXXXXX)
- *   NEXT_PUBLIC_GTM_ID              Google Tag Manager (GTM-XXXXXXX)
- *   NEXT_PUBLIC_META_PIXEL_ID       Meta (Facebook) Pixel
- *
- * Google Search Console verification is handled via metadata (see layout.tsx),
- * and Google Maps / Calendar keys are read where those features are used.
- */
+import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import Script from 'next/script'
+import { trackEvent } from '@/lib/analytics-events'
+
+const CONSENT_KEY = 'cb-cookie-consent'
+
+/** Optional third-party tags and the first-party journey tracker share consent. */
 export function Analytics() {
+  const pathname = usePathname()
+  const [allowed, setAllowed] = useState(false)
   const ga = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
   const gtm = process.env.NEXT_PUBLIC_GTM_ID
   const pixel = process.env.NEXT_PUBLIC_META_PIXEL_ID
+
+  useEffect(() => {
+    const sync = () => setAllowed(window.localStorage.getItem(CONSENT_KEY) === 'accepted')
+    sync()
+    window.addEventListener('cb-consent-changed', sync)
+    return () => window.removeEventListener('cb-consent-changed', sync)
+  }, [])
+
+  useEffect(() => {
+    if (allowed) trackEvent('page_view')
+  }, [allowed, pathname])
+
+  if (!allowed) return null
 
   return (
     <>
@@ -26,19 +38,14 @@ export function Analytics() {
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
             })(window,document,'script','dataLayer','${gtm}');`}
         </Script>
-      ) : null}
-
-      {ga ? (
+      ) : ga ? (
         <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${ga}`}
-            strategy="afterInteractive"
-          />
+          <Script src={`https://www.googletagmanager.com/gtag/js?id=${ga}`} strategy="afterInteractive" />
           <Script id="ga4" strategy="afterInteractive">
             {`window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', '${ga}');`}
+              gtag('config', '${ga}', { anonymize_ip: true });`}
           </Script>
         </>
       ) : null}
@@ -57,22 +64,5 @@ export function Analytics() {
         </Script>
       ) : null}
     </>
-  )
-}
-
-/** GTM noscript fallback — place immediately after <body>. */
-export function GtmNoScript() {
-  const gtm = process.env.NEXT_PUBLIC_GTM_ID
-  if (!gtm) return null
-  return (
-    <noscript>
-      <iframe
-        src={`https://www.googletagmanager.com/ns.html?id=${gtm}`}
-        height="0"
-        width="0"
-        style={{ display: 'none', visibility: 'hidden' }}
-        title="Google Tag Manager"
-      />
-    </noscript>
   )
 }
