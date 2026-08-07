@@ -12,7 +12,7 @@
  */
 
 export const site = {
-  name: 'Casa Bernocchi',
+  name: 'Casa Bernocchi®',
   legalName: 'Bernocchi Globale Holdings',
   domain: 'bernocchiglobale.it',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bernocchiglobale.it',
