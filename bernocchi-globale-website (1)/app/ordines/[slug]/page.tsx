@@ -30,13 +30,22 @@ const icons = {
 } satisfies Record<OrdoSlug, typeof Stethoscope>
 
 export function generateStaticParams() {
-  return ordines.map(({ slug }) => ({ slug }))
+  return ordines
+    .filter((ordo) => ordo.status === 'operating')
+    .map(({ slug }) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const ordo = getOrdo(slug)
   if (!ordo) return {}
+
+  if (ordo.status !== 'operating') {
+    return {
+      title: 'Roadmap institucional — Casa Bernocchi',
+      robots: { index: false, follow: false },
+    }
+  }
 
   return {
     title: `${ordo.order} — ${ordo.institution}`,
@@ -53,12 +62,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function OrdoPage({ params }: Props) {
   const { slug } = await params
   const ordo = getOrdo(slug)
-  if (!ordo) notFound()
+  if (!ordo || ordo.status !== 'operating') notFound()
 
   const Icon = icons[ordo.slug]
   const schema = {
     '@context': 'https://schema.org',
-    '@type': 'Organization',
+    '@type': 'ProfessionalService',
     name: ordo.institution,
     alternateName: ordo.order,
     url: `${site.url}/ordines/${ordo.slug}`,
@@ -96,7 +105,7 @@ export default async function OrdoPage({ params }: Props) {
             href="/institutions"
             className="inline-flex w-fit items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/48 transition hover:text-[#d8bd7a]"
           >
-            <ArrowLeft className="size-4" /> Todas las Ordines
+            <ArrowLeft className="size-4" /> Arquitectura institucional
           </Link>
 
           <div className="max-w-3xl pb-8">
@@ -122,17 +131,11 @@ export default async function OrdoPage({ params }: Props) {
       <section className="border-b border-white/10">
         <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[.85fr_1.15fr] lg:px-10 lg:py-28">
           <div>
-            <p className="text-[0.64rem] uppercase tracking-[0.24em] text-[#c9a85f]">
-              Mandato
-            </p>
-            <h2 className="mt-5 text-balance font-serif text-4xl font-light leading-tight sm:text-5xl">
-              {ordo.discipline}
-            </h2>
+            <p className="text-[0.64rem] uppercase tracking-[0.24em] text-[#c9a85f]">Mandato</p>
+            <h2 className="mt-5 text-balance font-serif text-4xl font-light leading-tight sm:text-5xl">{ordo.discipline}</h2>
           </div>
           <div>
-            <p className="text-xl font-light leading-9 text-white/72">
-              {ordo.mandate}
-            </p>
+            <p className="text-xl font-light leading-9 text-white/72">{ordo.mandate}</p>
             <p className="mt-6 leading-8 text-white/50">{ordo.summary}</p>
             {ordo.regulatoryNote ? (
               <div className="mt-8 flex gap-3 rounded-2xl border border-[#c9a85f]/22 bg-[#c9a85f]/6 p-5 text-xs leading-6 text-white/52">
@@ -148,27 +151,18 @@ export default async function OrdoPage({ params }: Props) {
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-10 lg:py-28">
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
-              <p className="text-[0.64rem] uppercase tracking-[0.24em] text-[#c9a85f]">
-                Ámbitos de capacidad
-              </p>
+              <p className="text-[0.64rem] uppercase tracking-[0.24em] text-[#c9a85f]">Ámbitos de capacidad</p>
               <div className="mt-7 grid gap-3">
                 {ordo.capabilities.map((capability, index) => (
-                  <div
-                    key={capability}
-                    className="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.025] p-5"
-                  >
-                    <span className="mt-0.5 font-mono text-[0.62rem] text-[#c9a85f]">
-                      0{index + 1}
-                    </span>
+                  <div key={capability} className="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+                    <span className="mt-0.5 font-mono text-[0.62rem] text-[#c9a85f]">0{index + 1}</span>
                     <p className="text-sm leading-6 text-white/68">{capability}</p>
                   </div>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-[0.64rem] uppercase tracking-[0.24em] text-[#c9a85f]">
-                Controles de entrada
-              </p>
+              <p className="text-[0.64rem] uppercase tracking-[0.24em] text-[#c9a85f]">Controles de entrada</p>
               <div className="mt-7 rounded-3xl border border-[#c9a85f]/24 bg-[#c9a85f]/6 p-7">
                 <ul className="space-y-5">
                   {ordo.controls.map((control) => (
@@ -179,12 +173,8 @@ export default async function OrdoPage({ params }: Props) {
                   ))}
                 </ul>
                 <div className="mt-8 border-t border-white/10 pt-6">
-                  <p className="text-[0.6rem] uppercase tracking-[0.2em] text-white/34">
-                    Próximo hito declarado
-                  </p>
-                  <p className="mt-3 font-serif text-xl text-[#e4cf9d]">
-                    {ordo.nextMilestone}
-                  </p>
+                  <p className="text-[0.6rem] uppercase tracking-[0.2em] text-white/34">Próximo hito declarado</p>
+                  <p className="mt-3 font-serif text-xl text-[#e4cf9d]">{ordo.nextMilestone}</p>
                 </div>
               </div>
             </div>
@@ -195,17 +185,10 @@ export default async function OrdoPage({ params }: Props) {
       <section className="bg-[#f3eee3] text-[#07131f]">
         <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-16 sm:flex-row sm:items-center sm:justify-between lg:px-10 lg:py-20">
           <div>
-            <p className="text-[0.64rem] uppercase tracking-[0.24em] text-[#927331]">
-              Segreteria Generale
-            </p>
-            <h2 className="mt-3 max-w-2xl text-balance font-serif text-3xl font-light sm:text-4xl">
-              Cada conversación comienza con alcance y responsabilidad claros.
-            </h2>
+            <p className="text-[0.64rem] uppercase tracking-[0.24em] text-[#927331]">Segreteria Generale</p>
+            <h2 className="mt-3 max-w-2xl text-balance font-serif text-3xl font-light sm:text-4xl">Cada conversación comienza con alcance y responsabilidad claros.</h2>
           </div>
-          <Link
-            href={ordo.primaryHref}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#07131f] px-7 py-3.5 text-sm font-semibold text-[#f3eee3] transition hover:-translate-y-0.5"
-          >
+          <Link href={ordo.primaryHref} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#07131f] px-7 py-3.5 text-sm font-semibold text-[#f3eee3] transition hover:-translate-y-0.5">
             {ordo.primaryLabel} <ArrowRight className="size-4" />
           </Link>
         </div>
