@@ -2,14 +2,19 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
+  ArrowRight,
+  BadgeCheck,
+  CalendarCheck,
+  Clock3,
+  Globe2,
+  HeartHandshake,
+  HeartPulse,
+  Languages,
+  Lock,
   ShieldCheck,
   Sparkles,
-  BadgeCheck,
-  Lock,
   UserRound,
-  CalendarCheck,
   ClipboardList,
-  HeartPulse,
 } from 'lucide-react'
 import { ComplianceNote } from '@/components/compliance-note'
 import { BookingFlow } from '@/components/booking/booking-flow'
@@ -25,14 +30,14 @@ import {
 import { formatPrice } from '@/lib/format'
 
 export const metadata: Metadata = {
-  title: 'Bernocchi Health — Clinical Sexology, Psychology & Well-being',
+  title: 'Bernocchi Health — Sexology, Psychology & Relationship Care',
   description:
-    'Bernocchi Health provides clinical sexology, psychology and human well-being with Italian standards of professional excellence. Confidential consultations, online worldwide or in person.',
+    'Confidential, structured care for sexual health, relationships and emotional well-being. Online consultations and in-person care in Costa Rica, subject to professional and jurisdictional eligibility.',
   alternates: { canonical: '/health' },
   openGraph: {
-    title: 'Bernocchi Health — Clinical Sexology, Psychology & Well-being',
+    title: 'Bernocchi Health — Private, structured clinical care',
     description:
-      'Confidential consultations with Italian standards of professional excellence. Online worldwide or in person.',
+      'A confidential first consultation, a clear clinical pathway and continuity of care.',
     url: '/health',
   },
 }
@@ -40,356 +45,301 @@ export const metadata: Metadata = {
 const pillarIcons = [BadgeCheck, ShieldCheck, Lock, Sparkles]
 const journeyIcons = [CalendarCheck, UserRound, ClipboardList, HeartPulse]
 
+const focusAreas = [
+  'Sexual health and sexual function',
+  'Desire, intimacy and relational dynamics',
+  'Couples and communication',
+  'Emotional regulation and behavioural patterns',
+  'Male and female sexual health',
+  'Neurobehavioural and psychoneuroendocrine perspectives',
+]
+
 export default function HealthPage() {
   return (
     <>
-      {/* 1 — HERO */}
-      <section className="relative overflow-hidden bg-navy text-ivory">
+      <section className="relative isolate overflow-hidden bg-navy text-ivory">
         <Image
           src="/images/health-hero.png"
-          alt="A serene, light-filled private consultation space with Italian marble and natural light"
+          alt="Private consultation environment"
           fill
           priority
-          className="object-cover opacity-25"
+          className="object-cover opacity-24"
           sizes="100vw"
         />
-        <div
-          className="absolute inset-0 bg-gradient-to-b from-navy/70 via-navy/80 to-navy"
-          aria-hidden="true"
-        />
-        <div className="relative mx-auto flex min-h-[70vh] max-w-6xl flex-col justify-center px-6 py-24 md:py-32">
-          <p className="text-xs uppercase tracking-[0.28em] text-gold">
-            Bernocchi Health
-          </p>
-          <h1 className="mt-6 max-w-3xl text-balance font-serif text-4xl leading-[1.05] md:text-6xl">
-            Bernocchi Health
-          </h1>
-          <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-ivory/75 md:text-xl">
-            Clinical Sexology, Psychology and Human Well-being with Italian
-            standards of professional excellence.
-          </p>
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <Link
-              href="#book"
-              className="inline-flex items-center justify-center rounded-sm bg-gold px-7 py-3.5 text-sm font-medium text-navy transition-colors hover:bg-gold/90"
-            >
-              Book a Consultation
-            </Link>
-            <Link
-              href="#why"
-              className="inline-flex items-center justify-center rounded-sm border border-ivory/30 px-7 py-3.5 text-sm font-medium text-ivory transition-colors hover:border-gold hover:text-gold"
-            >
-              Meet Our Team
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 2 — OUR SERVICES */}
-      <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-        <div className="max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.2em] text-gold">
-            Our Services
-          </p>
-          <h2 className="mt-3 text-balance font-serif text-3xl text-foreground md:text-4xl">
-            Specialised, confidential care
-          </h2>
-          <p className="mt-4 leading-relaxed text-muted-foreground">
-            Each pathway is delivered by licensed professionals, online or in
-            person, with the discretion of a private institution.
-          </p>
-        </div>
-
-        <ul className="mt-12 grid gap-px overflow-hidden rounded-sm border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
-          {healthServiceCards.map((service) => (
-            <li
-              key={service.name}
-              className="flex flex-col bg-card p-7 transition-colors hover:bg-secondary"
-            >
-              <h3 className="font-serif text-xl text-foreground text-balance">
-                {service.name}
-              </h3>
-              <span
-                className="mt-3 h-px w-10 bg-gold"
-                aria-hidden="true"
-              />
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                {service.description}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* 3 — WHY BERNOCCHI */}
-      <section id="why" className="scroll-mt-24 border-y border-border bg-stone">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-          <div className="max-w-2xl">
-            <p className="text-xs uppercase tracking-[0.2em] text-gold">
-              Why Bernocchi
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,#07131f_4%,rgba(7,19,31,.96)_54%,rgba(7,19,31,.72))]" />
+        <div className="relative mx-auto grid min-h-[76svh] max-w-7xl items-center gap-12 px-6 py-20 lg:grid-cols-[1.12fr_.88fr] lg:px-10 lg:py-28">
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-gold">
+              Bernocchi Health · Ordo Medicinae
             </p>
-            <h2 className="mt-3 text-balance font-serif text-3xl text-foreground md:text-4xl">
-              The principles behind our care
-            </h2>
-            <p className="mt-4 leading-relaxed text-muted-foreground">
-              Our clinical team practises to a single institutional standard —
-              rigorous, discreet and enduring.
+            <h1 className="mt-6 max-w-4xl text-balance font-serif text-5xl font-light leading-[.98] sm:text-6xl lg:text-7xl">
+              Private care for sexual health, relationships and emotional well-being.
+            </h1>
+            <p className="mt-7 max-w-2xl text-base leading-8 text-ivory/68 sm:text-lg">
+              A confidential first consultation, a clear clinical formulation and a
+              considered care pathway — without judgement, pressure or generic packages.
             </p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="#book"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-gold px-7 py-3.5 text-sm font-semibold text-navy transition hover:-translate-y-0.5 hover:bg-[#dfc47f]"
+              >
+                Request a confidential first consultation <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="#professional"
+                className="inline-flex items-center justify-center rounded-full border border-ivory/24 px-7 py-3.5 text-sm font-medium text-ivory transition hover:border-gold/60 hover:text-gold"
+              >
+                Meet the clinical direction
+              </Link>
+            </div>
           </div>
 
-          <div className="mt-12 grid gap-px overflow-hidden rounded-sm border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
-            {whyBernocchi.map((pillar, i) => {
-              const Icon = pillarIcons[i % pillarIcons.length]
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            {[
+              [Lock, 'Confidential by design', 'No clinical details are requested through public website forms.'],
+              [Clock3, 'Unhurried consultations', 'Most pathways reserve 50–80 minutes for a thorough first conversation.'],
+              [Globe2, 'Online or in person', 'Remote care and Costa Rica-based in-person consultations, subject to eligibility.'],
+              [Languages, 'English · Spanish · Italian', 'Choose your preferred consultation language when requesting an appointment.'],
+            ].map(([Icon, title, body]) => {
+              const Component = Icon as typeof Lock
               return (
-                <div
-                  key={pillar.title}
-                  className="flex flex-col gap-4 bg-card p-7"
-                >
-                  <Icon className="size-6 text-gold" aria-hidden="true" />
-                  <h3 className="font-serif text-xl text-foreground text-balance">
-                    {pillar.title}
-                    {pillar.flag ? (
-                      <span
-                        aria-hidden="true"
-                        className="ml-1.5 align-baseline"
-                      >
-                        {pillar.flag}
-                      </span>
-                    ) : null}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {pillar.body}
-                  </p>
-                </div>
+                <article key={String(title)} className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 backdrop-blur-sm">
+                  <Component className="size-5 text-gold" />
+                  <h2 className="mt-5 font-serif text-xl">{String(title)}</h2>
+                  <p className="mt-2 text-sm leading-6 text-white/52">{String(body)}</p>
+                </article>
               )
             })}
           </div>
         </div>
       </section>
 
-      {/* 4 — PATIENT JOURNEY */}
-      <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-        <div className="max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.2em] text-gold">
-            Patient Journey
-          </p>
-          <h2 className="mt-3 text-balance font-serif text-3xl text-foreground md:text-4xl">
-            A considered path, from first contact to follow-up
-          </h2>
-        </div>
-
-        <ol className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {patientJourney.map((stage, i) => {
-            const Icon = journeyIcons[i % journeyIcons.length]
-            return (
-              <li key={stage.step} className="relative flex flex-col">
-                <div className="flex items-center gap-3">
-                  <span className="font-serif text-sm text-gold">
-                    {stage.step}
-                  </span>
-                  <span
-                    className="h-px flex-1 bg-border"
-                    aria-hidden="true"
-                  />
-                  <Icon className="size-5 text-gold" aria-hidden="true" />
-                </div>
-                <h3 className="mt-5 font-serif text-xl text-foreground">
-                  {stage.title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  {stage.body}
-                </p>
-              </li>
-            )
-          })}
-        </ol>
-      </section>
-
-      {/* 5 — CONSULTATIONS, PRICING & BOOKING */}
-      <section className="border-t border-border bg-stone">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-          <div className="grid gap-12 lg:grid-cols-[1fr_0.85fr] lg:items-start">
+      <section id="services" className="scroll-mt-24 bg-[#f7f3ea] text-[#07131f]">
+        <div className="mx-auto max-w-7xl px-6 py-20 lg:px-10 lg:py-28">
+          <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-end">
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-gold">
-                Consultations & fees
-              </p>
-              <h2 className="mt-3 font-serif text-3xl text-foreground md:text-4xl">
-                Transparent, indicative fees
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#a3823e]">What we help with</p>
+              <h2 className="mt-5 text-balance font-serif text-4xl font-light leading-tight sm:text-5xl">
+                Specialised care, explained in human terms.
               </h2>
-              <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
-                Every consultation is delivered by a licensed clinician, online
-                or in person. Indicative fees are shown in full — there are no
-                hidden costs, and they are confirmed with you before your
-                appointment.
-              </p>
-
-              <ul className="mt-8 flex flex-col gap-4">
-                {healthServices.map((service) => (
-                  <li
-                    key={service.id}
-                    className="rounded-sm border border-border bg-card p-6"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-serif text-xl text-foreground">
-                          {service.name}
-                        </h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {service.duration} · Online or in person
-                        </p>
-                      </div>
-                      <span className="whitespace-nowrap font-serif text-2xl text-foreground">
-                        {formatPrice(service.priceInCents, service.currency)}
-                      </span>
-                    </div>
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                      {service.description}
-                    </p>
-                    <ul className="mt-4 flex flex-wrap gap-2">
-                      {service.benefits.map((b) => (
-                        <li
-                          key={b}
-                          className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground"
-                        >
-                          {b}
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                ))}
-              </ul>
             </div>
-
-            <div className="lg:sticky lg:top-28">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-sm">
-                <Image
-                  src="/images/health-calm.png"
-                  alt="A calm, private consultation room bathed in natural light"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 40vw"
-                />
-              </div>
-              <ComplianceNote className="mt-4">
-                Bernocchi Health does not provide emergency care. If this is a
-                medical emergency, contact your local emergency number
-                immediately. Do not enter clinical details in any form on this
-                site.
-              </ComplianceNote>
-            </div>
+            <p className="max-w-2xl text-base leading-8 text-[#07131f]/60 lg:justify-self-end">
+              People usually arrive with a problem, not a diagnostic label. The first
+              consultation is designed to understand what is happening before a plan is recommended.
+            </p>
           </div>
+
+          <ul className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {healthServiceCards.map((service) => (
+              <li key={service.name} className="rounded-3xl border border-[#07131f]/10 bg-white/60 p-7 shadow-[0_18px_60px_rgba(7,19,31,.04)]">
+                <HeartHandshake className="size-5 text-[#a3823e]" />
+                <h3 className="mt-7 font-serif text-2xl">{service.name}</h3>
+                <p className="mt-4 text-sm leading-7 text-[#07131f]/58">{service.description}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      {/* BOOKING FLOW */}
-      <section
-        id="book"
-        className="scroll-mt-24 border-t border-border bg-navy py-16 text-ivory md:py-24"
-      >
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs uppercase tracking-[0.2em] text-gold">
-              Book a consultation
-            </p>
-            <h2 className="mt-3 text-balance font-serif text-3xl md:text-4xl">
-              Request your appointment in a few steps
+      <section id="professional" className="scroll-mt-24 border-y border-white/10 bg-[#07131f] text-[#f7f1e6]">
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[.86fr_1.14fr] lg:items-center lg:px-10 lg:py-28">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-[0_30px_100px_rgba(0,0,0,.28)]">
+            <Image
+              src="/images/founder-portrait.png"
+              alt="Antonello Bernocchi Medici, founder and clinical direction of Bernocchi Health"
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 42vw"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#07131f] via-[#07131f]/72 to-transparent p-7 pt-24">
+              <p className="text-[0.62rem] uppercase tracking-[0.22em] text-gold">Founder · Clinical & Scientific Direction</p>
+              <h2 className="mt-2 font-serif text-3xl">Antonello Bernocchi Medici</h2>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-gold">The person behind the clinical standard</p>
+            <h2 className="mt-5 max-w-3xl text-balance font-serif text-4xl font-light leading-tight sm:text-5xl">
+              The first task is not to impress you. It is to understand your case correctly.
             </h2>
-            <p className="mt-4 leading-relaxed text-ivory/70">
-              Choose a consultation, tell us how you would like to meet, and
-              share your details. The Segreteria Generale will confirm
-              availability with you.
+            <div className="mt-7 space-y-5 text-base leading-8 text-white/60">
+              <p>
+                The clinical direction of Bernocchi Health works at the intersection of
+                clinical sexology, psychology, behavioural neuroscience and
+                psychoneuroendocrine perspectives. The objective is to translate a complex
+                personal or relational problem into a structured, understandable care plan.
+              </p>
+              <p>
+                Care may involve the individual, the couple or coordinated professional
+                support depending on the case. The clinician and scope of practice are
+                confirmed before treatment begins according to jurisdiction and professional eligibility.
+              </p>
+            </div>
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              {focusAreas.map((area) => (
+                <div key={area} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-white/62">
+                  <ShieldCheck className="mt-0.5 size-4 shrink-0 text-gold" />
+                  <span>{area}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 rounded-2xl border border-gold/22 bg-gold/6 p-5 text-xs leading-6 text-white/48">
+              Casa Bernocchi follows a verification-first credential policy: academic affiliations,
+              publications, honours and professional registrations are not used as public claims unless
+              the underlying documentation is available for verification.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="why" className="bg-[#f3eee3] text-[#07131f]">
+        <div className="mx-auto max-w-7xl px-6 py-20 lg:px-10 lg:py-28">
+          <div className="max-w-3xl">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#a3823e]">Why Bernocchi</p>
+            <h2 className="mt-5 text-balance font-serif text-4xl font-light leading-tight sm:text-5xl">A clinical relationship should feel safe before it feels sophisticated.</h2>
+          </div>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {whyBernocchi.map((pillar, i) => {
+              const Icon = pillarIcons[i % pillarIcons.length]
+              return (
+                <article key={pillar.title} className="rounded-3xl border border-[#07131f]/10 bg-white/55 p-7">
+                  <Icon className="size-5 text-[#a3823e]" />
+                  <h3 className="mt-7 font-serif text-2xl">{pillar.title}{pillar.flag ? <span className="ml-2">{pillar.flag}</span> : null}</h3>
+                  <p className="mt-4 text-sm leading-7 text-[#07131f]/58">{pillar.body}</p>
+                </article>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section id="process" className="scroll-mt-24 border-y border-border bg-[#f7f3ea] text-[#07131f]">
+        <div className="mx-auto max-w-7xl px-6 py-20 lg:px-10 lg:py-28">
+          <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-end">
+            <div>
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#a3823e]">How care begins</p>
+              <h2 className="mt-5 text-balance font-serif text-4xl font-light leading-tight sm:text-5xl">Clear steps. No mystery.</h2>
+            </div>
+            <p className="max-w-2xl text-base leading-8 text-[#07131f]/60 lg:justify-self-end">
+              The first consultation is an assessment, not a sales pitch. A treatment pathway is proposed only after the case has been understood.
             </p>
           </div>
 
-          <div className="mt-10">
-            <BookingFlow />
+          <ol className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {patientJourney.map((stage, i) => {
+              const Icon = journeyIcons[i % journeyIcons.length]
+              return (
+                <li key={stage.step} className="rounded-3xl border border-[#07131f]/10 bg-white/55 p-7">
+                  <div className="flex items-center justify-between">
+                    <span className="font-serif text-sm text-[#a3823e]">{stage.step}</span>
+                    <Icon className="size-5 text-[#a3823e]" />
+                  </div>
+                  <h3 className="mt-8 font-serif text-2xl">{stage.title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-[#07131f]/58">{stage.body}</p>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
+      </section>
+
+      <section id="fees" className="scroll-mt-24 bg-[#0a1927] text-[#f7f1e6]">
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[1.05fr_.95fr] lg:items-start lg:px-10 lg:py-28">
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-gold">Consultations & fees</p>
+            <h2 className="mt-5 text-balance font-serif text-4xl font-light leading-tight sm:text-5xl">Know the fee before you decide.</h2>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-white/56">
+              Indicative consultation fees are displayed transparently. The exact professional,
+              modality, availability and payment route are confirmed before the appointment.
+            </p>
+
+            <ul className="mt-10 grid gap-3">
+              {healthServices.map((service) => (
+                <li key={service.id} className="rounded-3xl border border-white/10 bg-white/[0.035] p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 className="font-serif text-2xl">{service.name}</h3>
+                      <p className="mt-2 text-sm text-white/40">{service.duration} · Online or in person</p>
+                    </div>
+                    <span className="whitespace-nowrap font-serif text-3xl text-[#e4cf9d]">{formatPrice(service.priceInCents, service.currency)}</span>
+                  </div>
+                  <p className="mt-4 text-sm leading-7 text-white/52">{service.description}</p>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-relaxed text-ivory/50">
-            This is an appointment request only — no payment is taken now, and
-            no clinical information is collected. Prefer to speak with us first?
-            Message us on{' '}
-            <a
-              href={whatsappUrl}
-              className="text-gold underline-offset-4 hover:underline"
-            >
-              WhatsApp
-            </a>{' '}
-            or email{' '}
-            <a
-              href={`mailto:${site.email}`}
-              className="text-gold underline-offset-4 hover:underline"
-            >
-              {site.email}
-            </a>
-            .
+          <div className="lg:sticky lg:top-28">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/10">
+              <Image
+                src="/images/health-calm.png"
+                alt="Calm, private consultation setting"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 42vw"
+              />
+            </div>
+            <ComplianceNote className="mt-4">
+              Bernocchi Health does not provide emergency care. If this is a medical emergency,
+              contact your local emergency number immediately. Do not enter clinical details in any form on this site.
+            </ComplianceNote>
+          </div>
+        </div>
+      </section>
+
+      <section id="book" className="scroll-mt-24 border-t border-white/10 bg-[#07131f] py-20 text-ivory lg:py-28">
+        <div className="mx-auto max-w-7xl px-6 lg:px-10">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-gold">First consultation</p>
+            <h2 className="mt-5 text-balance font-serif text-4xl font-light sm:text-5xl">You do not need to explain everything in a form.</h2>
+            <p className="mt-5 leading-8 text-white/56">
+              Choose the type of consultation, your preferred mode and basic contact details.
+              Clinical history belongs in the private consultation, not on a public booking page.
+            </p>
+          </div>
+          <div className="mt-10"><BookingFlow /></div>
+          <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-6 text-white/42">
+            Prefer to speak with the Segreteria first? Contact us on{' '}
+            <a href={whatsappUrl} className="text-gold underline-offset-4 hover:underline">WhatsApp</a>{' '}
+            or email <a href={`mailto:${site.email}`} className="text-gold underline-offset-4 hover:underline">{site.email}</a>.
           </p>
         </div>
       </section>
 
-      {/* 6 — FAQ */}
-      <section className="mx-auto max-w-3xl px-6 py-16 md:py-24">
-        <div className="text-center">
-          <p className="text-xs uppercase tracking-[0.2em] text-gold">
-            Frequently Asked Questions
-          </p>
-          <h2 className="mt-3 text-balance font-serif text-3xl text-foreground md:text-4xl">
-            Answers, in confidence
-          </h2>
-        </div>
-
-        <div className="mt-12 divide-y divide-border border-y border-border">
-          {healthFaqs.map((faq) => (
-            <details key={faq.question} className="group py-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left">
-                <span className="font-serif text-lg text-foreground">
-                  {faq.question}
-                </span>
-                <span
-                  className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-transform group-open:rotate-45"
-                  aria-hidden="true"
-                >
-                  +
-                </span>
-              </summary>
-              <p className="mt-4 pr-10 text-sm leading-relaxed text-muted-foreground">
-                {faq.answer}
-              </p>
-            </details>
-          ))}
+      <section id="faq" className="scroll-mt-24 bg-[#f7f3ea] text-[#07131f]">
+        <div className="mx-auto max-w-4xl px-6 py-20 lg:py-28">
+          <div className="text-center">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#a3823e]">Frequently asked questions</p>
+            <h2 className="mt-5 text-balance font-serif text-4xl font-light sm:text-5xl">What you should know before booking.</h2>
+          </div>
+          <div className="mt-12 divide-y divide-[#07131f]/10 border-y border-[#07131f]/10">
+            {healthFaqs.map((faq) => (
+              <details key={faq.question} className="group py-6">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-5 text-left">
+                  <span className="font-serif text-xl">{faq.question}</span>
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#07131f]/15 text-[#07131f]/50 transition group-open:rotate-45">+</span>
+                </summary>
+                <p className="mt-4 max-w-3xl pr-10 text-sm leading-7 text-[#07131f]/58">{faq.answer}</p>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* 7 — FINAL CTA */}
-      <section className="relative overflow-hidden border-t border-border bg-navy text-ivory">
-        <Image
-          src="/images/marble-detail.png"
-          alt=""
-          fill
-          className="object-cover opacity-10"
-          sizes="100vw"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute inset-0 bg-navy/80"
-          aria-hidden="true"
-        />
-        <div className="relative mx-auto max-w-3xl px-6 py-20 text-center md:py-28">
-          <h2 className="text-balance font-serif text-3xl md:text-5xl">
-            Book your consultation today
-          </h2>
-          <p className="mx-auto mt-6 max-w-xl text-pretty leading-relaxed text-ivory/75">
-            Professional care. Absolute confidentiality. Worldwide online
-            consultations.
-          </p>
-          <div className="mt-10 flex justify-center">
-            <Link
-              href="#book"
-              className="inline-flex items-center justify-center rounded-sm bg-gold px-8 py-4 text-sm font-medium text-navy transition-colors hover:bg-gold/90"
-            >
-              Book a Consultation
-            </Link>
+      <section className="border-t border-white/10 bg-[#0a1927] text-[#f7f1e6]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-20 lg:flex-row lg:items-center lg:justify-between lg:px-10">
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-gold">Confidential care starts with one conversation</p>
+            <p className="mt-4 max-w-3xl text-balance font-serif text-3xl font-light leading-tight sm:text-4xl">
+              If the case is not suitable for our scope, we would rather tell you clearly than sell you the wrong pathway.
+            </p>
           </div>
+          <Link href="#book" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gold px-7 py-3.5 text-sm font-semibold text-navy transition hover:-translate-y-0.5 hover:bg-[#dfc47f]">
+            Request consultation <ArrowRight className="size-4" />
+          </Link>
         </div>
       </section>
     </>
