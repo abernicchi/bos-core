@@ -42,18 +42,17 @@ export async function POST(request: Request) {
     }
 
     await adminSetOfficePassword(activation.user_id, password)
+    const session = await signInOffice(ANTONELLA_EMAIL, password)
+    await requireSchedulingIdentity(session.access_token)
 
     await supabaseRequest(
       `office_activation_tokens?id=eq.${encodeURIComponent(activation.id)}&used_at=is.null`,
       {
         method: 'PATCH',
         headers: { Prefer: 'return=minimal' },
-        body: JSON.stringify({ used_at: now }),
+        body: JSON.stringify({ used_at: new Date().toISOString() }),
       },
     )
-
-    const session = await signInOffice(ANTONELLA_EMAIL, password)
-    await requireSchedulingIdentity(session.access_token)
 
     const response = NextResponse.json({ ok: true })
     response.cookies.set(
