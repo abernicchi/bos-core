@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { journalArticles, site } from '@/lib/content'
+import { site } from '@/lib/content'
 import { ordines } from '@/lib/ordines'
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -11,7 +11,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/payments',
     '/governance',
     '/founder',
-    '/journal',
     '/contact',
     '/privacy',
     '/cookies',
@@ -23,7 +22,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const priorityFor = (path: string) => {
     if (path === '') return 1
-    if (path === '/health') return 0.9
+    if (path === '/health') return 0.95
+    if (path === '/founder' || path === '/casa') return 0.75
     return 0.6
   }
 
@@ -34,19 +34,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: priorityFor(path),
   }))
 
-  const articleEntries: MetadataRoute.Sitemap = journalArticles.map((a) => ({
-    url: `${site.url}/journal/${a.slug}`,
-    lastModified: now,
-    changeFrequency: 'monthly',
-    priority: 0.5,
-  }))
+  const operatingOrdoEntries: MetadataRoute.Sitemap = ordines
+    .filter((ordo) => ordo.status === 'operating')
+    .map((ordo) => ({
+      url: `${site.url}/ordines/${ordo.slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    }))
 
-  const ordoEntries: MetadataRoute.Sitemap = ordines.map((ordo) => ({
-    url: `${site.url}/ordines/${ordo.slug}`,
-    lastModified: now,
-    changeFrequency: 'monthly',
-    priority: ordo.status === 'operating' ? 0.85 : 0.65,
-  }))
-
-  return [...staticEntries, ...ordoEntries, ...articleEntries]
+  return [...staticEntries, ...operatingOrdoEntries]
 }
