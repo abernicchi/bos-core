@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { site } from '@/lib/content'
 import { ordines } from '@/lib/ordines'
+import { scientificArticles } from '@/lib/journal'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
@@ -8,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/casa',
     '/institutions',
     '/health',
+    '/journal',
     '/payments',
     '/governance',
     '/founder',
@@ -19,11 +21,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ]
 
   const now = new Date()
-
   const priorityFor = (path: string) => {
     if (path === '') return 1
-    if (path === '/health') return 0.95
-    if (path === '/founder' || path === '/casa') return 0.75
+    if (path === '/institutions') return 0.95
+    if (path === '/health' || path === '/journal') return 0.9
+    if (path === '/casa' || path === '/governance') return 0.8
     return 0.6
   }
 
@@ -34,14 +36,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: priorityFor(path),
   }))
 
-  const operatingOrdoEntries: MetadataRoute.Sitemap = ordines
-    .filter((ordo) => ordo.status === 'operating')
-    .map((ordo) => ({
-      url: `${site.url}/ordines/${ordo.slug}`,
-      lastModified: now,
-      changeFrequency: 'monthly',
-      priority: 0.85,
-    }))
+  const ordoEntries: MetadataRoute.Sitemap = ordines.map((ordo) => ({
+    url: `${site.url}/ordines/${ordo.slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: 0.88,
+  }))
 
-  return [...staticEntries, ...operatingOrdoEntries]
+  const journalEntries: MetadataRoute.Sitemap = scientificArticles.map((article) => ({
+    url: `${site.url}/journal/${article.slug}`,
+    lastModified: new Date(`${article.updatedAt}T12:00:00Z`),
+    changeFrequency: 'yearly',
+    priority: 0.78,
+  }))
+
+  return [...staticEntries, ...ordoEntries, ...journalEntries]
 }
