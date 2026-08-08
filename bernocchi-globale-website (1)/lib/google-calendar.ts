@@ -1,8 +1,14 @@
 import { createSign } from 'node:crypto'
 
 export const CASA_BERNOCCHI_CALENDAR_SCOPES = {
+  casa_bernocchi: 'Casa Bernocchi',
+  general_secretariat: 'Segreteria Generale',
   segreteria_generale: 'Segreteria Generale',
   office_of_founder: 'Ufficio del Fondatore',
+  health: 'Bernocchi Health',
+  legal: 'Bernocchi Legal',
+  technology: 'Bernocchi Technology',
+  business_services: 'Bernocchi Business Services',
   ordo_medicinae: 'Ordo Medicinae · Bernocchi Health',
   ordo_iuris: 'Ordo Iuris',
   ordo_scientia: 'Ordo Scientia',
