@@ -100,6 +100,13 @@ function overlaps(start: Date, end: Date, otherStart: Date, otherEnd: Date) {
   return start < otherEnd && end > otherStart
 }
 
+function isExpiredPendingHold(event: CalendarEvent, now = new Date()) {
+  const properties = event.extendedProperties?.private
+  return properties?.bookingStatus === 'pending_deposit' &&
+    Boolean(properties.holdExpiresAt) &&
+    new Date(properties!.holdExpiresAt) <= now
+}
+
 export async function listEvents(startAt: string, endAt: string): Promise<CalendarEvent[]> {
   const query = new URLSearchParams({
     timeMin: startAt,
@@ -116,8 +123,13 @@ export async function assertCalendarAvailable(startAt: string, endAt: string) {
   const requestedStart = new Date(startAt)
   const requestedEnd = new Date(endAt)
   const events = await listEvents(startAt, endAt)
+  const now = new Date()
+
+  const expiredHolds = events.filter((event) => event.id && isExpiredPendingHold(event, now))
+  await Promise.allSettled(expiredHolds.map((event) => deleteCalendarEvent(event.id!)))
 
   const conflict = events.some((event) => {
+    if (isExpiredPendingHold(event, now)) return false
     if (event.status === 'cancelled' || event.transparency === 'transparent') return false
     if (!event.start?.dateTime || !event.end?.dateTime) return true
     return overlaps(
