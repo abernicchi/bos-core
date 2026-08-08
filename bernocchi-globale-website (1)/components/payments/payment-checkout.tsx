@@ -88,13 +88,21 @@ export function PaymentCheckout({
               body: JSON.stringify({ paymentToken }),
             },
           )
-          const data = (await response.json()) as { status?: string; error?: string }
+          const data = (await response.json()) as {
+            status?: string
+            confirmation?: 'sent' | 'already_sent' | 'email_failed' | 'unavailable'
+            error?: string
+          }
           if (!response.ok || data.status !== 'COMPLETED') {
             throw new Error(data.error ?? 'No fue posible confirmar el pago.')
           }
           setCompleted(true)
           trackEvent('payment_complete', { provider: 'paypal' })
-          setMessage('Pago recibido y conciliado correctamente.')
+          setMessage(
+            data.confirmation === 'sent' || data.confirmation === 'already_sent'
+              ? 'Pago confirmado. Su cita quedó confirmada y la comunicación definitiva fue enviada a su correo.'
+              : 'Pago confirmado y reserva conciliada. Si el correo definitivo no aparece en unos minutos, contacte a la Segreteria Generale indicando su referencia.',
+          )
         },
         onCancel: () => setMessage('El pago fue cancelado. La orden sigue disponible.'),
         onError: (error) => {
@@ -136,7 +144,7 @@ export function PaymentCheckout({
         <CheckCircle2 className="mx-auto size-10 text-emerald-300" />
         <h2 className="mt-5 font-serif text-3xl text-white">Pago confirmado</h2>
         <p className="mt-3 text-sm leading-7 text-white/58">
-          La Segreteria Generale recibió la conciliación y enviará la confirmación.
+          {message ?? 'La reserva fue conciliada correctamente.'}
         </p>
       </div>
     )
