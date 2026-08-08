@@ -19,9 +19,24 @@ export async function POST(
     if (!order || order.provider !== 'paypal' || order.provider_order_id !== orderId) {
       return NextResponse.json({ error: 'Orden no válida.' }, { status: 404 })
     }
+
     if (order.status === 'completed') {
-      return NextResponse.json({ status: 'COMPLETED', confirmation: 'already_completed' })
+      let confirmation: 'sent' | 'already_sent' | 'email_failed' | 'unavailable' = 'unavailable'
+      if (order.provider_capture_id) {
+        try {
+          const result = await finalizePaidReservation({
+            order,
+            provider: 'paypal',
+            transactionId: order.provider_capture_id,
+          })
+          confirmation = result.status
+        } catch (error) {
+          console.error('[Casa Bernocchi] Completed-payment finalization retry failed:', error)
+        }
+      }
+      return NextResponse.json({ status: 'COMPLETED', confirmation })
     }
+
     if (paymentIsExpired(order)) {
       return NextResponse.json({ error: 'El enlace ha expirado.' }, { status: 410 })
     }
