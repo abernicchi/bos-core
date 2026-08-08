@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { CalendarDays, CreditCard, ShieldCheck } from 'lucide-react'
+import { ManualBookingForm } from '@/components/office/manual-booking-form'
 import { PaymentLinkForm } from '@/components/office/payment-link-form'
 import { OFFICE_ACCESS_COOKIE, requireSchedulingIdentity } from '@/lib/office-auth'
 import { supabaseRequest } from '@/lib/supabase-rest'
@@ -78,6 +79,15 @@ export default async function OfficePage() {
         </div>
 
         <section className="mt-10">
+          <p className="text-[0.64rem] font-semibold uppercase tracking-[0.25em] text-[#c9a85f]">Agenda directa</p>
+          <h2 className="mt-2 font-serif text-3xl font-light">Nueva cita desde WhatsApp o correo</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-white/42">
+            Segreteria registra la solicitud, Calendar comprueba disponibilidad y el horario queda bloqueado inmediatamente. Después puede fijarse el monto y generarse el enlace privado de pago.
+          </p>
+          <ManualBookingForm />
+        </section>
+
+        <section className="mt-12">
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-[0.64rem] font-semibold uppercase tracking-[0.25em] text-[#c9a85f]">Pacientes y cobros</p>
