@@ -3,40 +3,23 @@
 import Link from 'next/link'
 import { Globe2, Mail, MessageCircle } from 'lucide-react'
 import { site, whatsappUrl } from '@/lib/content'
+import { ordines } from '@/lib/ordines'
 import { Monogram } from '@/components/monogram'
 import { LanguageSelector } from '@/components/language-selector'
 import { useCasaLocale } from '@/components/use-casa-locale'
 import type { LocaleCode } from '@/lib/i18n'
 
-const copy: Record<LocaleCode, {
-  heritage: string
-  opening: string
-  international: string
-  house: string
-  services: string
-  governance: string
-  founder: string
-  contact: string
-  health: string
-  institutions: string
-  privacy: string
-  cookies: string
-  terms: string
-  disclaimer: string
-  orientation: string
-  euNote: string
-  rights: string
-}> = {
-  es: { heritage:'Origen histórico', opening:'Operación regional', international:'Orientación internacional', house:'La Casa', services:'Actividad pública', governance:'Gobernanza', founder:'Fundador', contact:'Contacto', health:'Bernocchi Health', institutions:'Roadmap institucional', privacy:'Privacidad', cookies:'Cookies', terms:'Términos', disclaimer:'Aviso médico', orientation:'Orientación europea', euNote:'La bandera europea no implica aprobación, patrocinio ni afiliación oficial con la Unión Europea.', rights:'Todos los derechos reservados.' },
-  en: { heritage:'Historical origin', opening:'Regional operation', international:'International orientation', house:'The House', services:'Public activity', governance:'Governance', founder:'Founder', contact:'Contact', health:'Bernocchi Health', institutions:'Institutional roadmap', privacy:'Privacy', cookies:'Cookies', terms:'Terms', disclaimer:'Medical disclaimer', orientation:'European orientation', euNote:'The European flag does not imply approval, sponsorship or official affiliation with the European Union.', rights:'All rights reserved.' },
-  it: { heritage:'Origine storica', opening:'Operatività regionale', international:'Orientamento internazionale', house:'La Casa', services:'Attività pubblica', governance:'Governance', founder:'Fondatore', contact:'Contatti', health:'Bernocchi Health', institutions:'Roadmap istituzionale', privacy:'Privacy', cookies:'Cookie', terms:'Termini', disclaimer:'Avvertenza medica', orientation:'Orientamento europeo', euNote:'La bandiera europea non implica approvazione, patrocinio o affiliazione ufficiale con l’Unione europea.', rights:'Tutti i diritti riservati.' },
-  fr: { heritage:'Origine historique', opening:'Activité régionale', international:'Orientation internationale', house:'La Maison', services:'Activité publique', governance:'Gouvernance', founder:'Fondateur', contact:'Contact', health:'Bernocchi Health', institutions:'Feuille de route institutionnelle', privacy:'Confidentialité', cookies:'Cookies', terms:'Conditions', disclaimer:'Avertissement médical', orientation:'Orientation européenne', euNote:'Le drapeau européen n’implique ni approbation, ni parrainage, ni affiliation officielle avec l’Union européenne.', rights:'Tous droits réservés.' },
-  de: { heritage:'Historischer Ursprung', opening:'Regionaler Betrieb', international:'Internationale Ausrichtung', house:'Das Haus', services:'Öffentliche Tätigkeit', governance:'Governance', founder:'Gründer', contact:'Kontakt', health:'Bernocchi Health', institutions:'Institutionelle Roadmap', privacy:'Datenschutz', cookies:'Cookies', terms:'Bedingungen', disclaimer:'Medizinischer Hinweis', orientation:'Europäische Orientierung', euNote:'Die Europaflagge bedeutet keine Genehmigung, Förderung oder offizielle Verbindung zur Europäischen Union.', rights:'Alle Rechte vorbehalten.' },
-  ca: { heritage:'Origen històric', opening:'Operació regional', international:'Orientació internacional', house:'La Casa', services:'Activitat pública', governance:'Governança', founder:'Fundador', contact:'Contacte', health:'Bernocchi Health', institutions:'Full de ruta institucional', privacy:'Privacitat', cookies:'Cookies', terms:'Termes', disclaimer:'Avís mèdic', orientation:'Orientació europea', euNote:'La bandera europea no implica aprovació, patrocini ni afiliació oficial amb la Unió Europea.', rights:'Tots els drets reservats.' },
-  zh: { heritage:'历史起源', opening:'区域运营', international:'国际导向', house:'家族机构', services:'公开业务', governance:'治理', founder:'创始人', contact:'联系', health:'Bernocchi Health', institutions:'机构路线图', privacy:'隐私', cookies:'Cookie', terms:'条款', disclaimer:'医疗声明', orientation:'欧洲导向', euNote:'欧洲旗帜不代表欧盟批准、赞助或官方隶属。', rights:'保留所有权利。' },
-  pl: { heritage:'Początek historyczny', opening:'Działalność regionalna', international:'Orientacja międzynarodowa', house:'Dom', services:'Działalność publiczna', governance:'Ład', founder:'Założyciel', contact:'Kontakt', health:'Bernocchi Health', institutions:'Mapa rozwoju instytucjonalnego', privacy:'Prywatność', cookies:'Cookies', terms:'Warunki', disclaimer:'Nota medyczna', orientation:'Orientacja europejska', euNote:'Flaga europejska nie oznacza zatwierdzenia, sponsorowania ani oficjalnego powiązania z Unią Europejską.', rights:'Wszelkie prawa zastrzeżone.' },
-  ru: { heritage:'Историческое начало', opening:'Региональная деятельность', international:'Международная ориентация', house:'Дом', services:'Публичная деятельность', governance:'Управление', founder:'Основатель', contact:'Контакты', health:'Bernocchi Health', institutions:'Институциональная дорожная карта', privacy:'Конфиденциальность', cookies:'Cookies', terms:'Условия', disclaimer:'Медицинское уведомление', orientation:'Европейская ориентация', euNote:'Флаг Европы не означает одобрение, спонсорство или официальную связь с Европейским союзом.', rights:'Все права защищены.' },
-  ja: { heritage:'歴史的起源', opening:'地域運営', international:'国際志向', house:'カーサ', services:'公開活動', governance:'ガバナンス', founder:'創設者', contact:'お問い合わせ', health:'Bernocchi Health', institutions:'組織ロードマップ', privacy:'プライバシー', cookies:'Cookie', terms:'利用規約', disclaimer:'医療免責事項', orientation:'欧州志向', euNote:'欧州旗はEUの承認、後援、公式提携を意味しません。', rights:'無断転載を禁じます。' },
+const copy: Record<LocaleCode, { house: string; ordines: string; international: string; governance: string; founder: string; contact: string; journal: string; privacy: string; cookies: string; terms: string; disclaimer: string; orientation: string; euNote: string; rights: string }> = {
+  es: { house:'La Casa', ordines:'Ordines', international:'Orientación internacional', governance:'Gobernanza', founder:'Fundador', contact:'Contacto', journal:'Scientia · Journal', privacy:'Privacidad', cookies:'Cookies', terms:'Términos', disclaimer:'Aviso médico', orientation:'Orientación europea', euNote:'La bandera europea no implica aprobación, patrocinio ni afiliación oficial con la Unión Europea.', rights:'Todos los derechos reservados.' },
+  en: { house:'The House', ordines:'Ordines', international:'International orientation', governance:'Governance', founder:'Founder', contact:'Contact', journal:'Scientia · Journal', privacy:'Privacy', cookies:'Cookies', terms:'Terms', disclaimer:'Medical disclaimer', orientation:'European orientation', euNote:'The European flag does not imply approval, sponsorship or official affiliation with the European Union.', rights:'All rights reserved.' },
+  it: { house:'La Casa', ordines:'Ordines', international:'Orientamento internazionale', governance:'Governance', founder:'Fondatore', contact:'Contatti', journal:'Scientia · Journal', privacy:'Privacy', cookies:'Cookie', terms:'Termini', disclaimer:'Avvertenza medica', orientation:'Orientamento europeo', euNote:'La bandiera europea non implica approvazione, patrocinio o affiliazione ufficiale con l’Unione europea.', rights:'Tutti i diritti riservati.' },
+  fr: { house:'La Maison', ordines:'Ordines', international:'Orientation internationale', governance:'Gouvernance', founder:'Fondateur', contact:'Contact', journal:'Scientia · Journal', privacy:'Confidentialité', cookies:'Cookies', terms:'Conditions', disclaimer:'Avertissement médical', orientation:'Orientation européenne', euNote:'Le drapeau européen n’implique ni approbation, ni parrainage, ni affiliation officielle avec l’Union européenne.', rights:'Tous droits réservés.' },
+  de: { house:'Das Haus', ordines:'Ordines', international:'Internationale Ausrichtung', governance:'Governance', founder:'Gründer', contact:'Kontakt', journal:'Scientia · Journal', privacy:'Datenschutz', cookies:'Cookies', terms:'Bedingungen', disclaimer:'Medizinischer Hinweis', orientation:'Europäische Orientierung', euNote:'Die Europaflagge bedeutet keine Genehmigung, Förderung oder offizielle Verbindung zur Europäischen Union.', rights:'Alle Rechte vorbehalten.' },
+  ca: { house:'La Casa', ordines:'Ordines', international:'Orientació internacional', governance:'Governança', founder:'Fundador', contact:'Contacte', journal:'Scientia · Journal', privacy:'Privacitat', cookies:'Cookies', terms:'Termes', disclaimer:'Avís mèdic', orientation:'Orientació europea', euNote:'La bandera europea no implica aprovació, patrocini ni afiliació oficial amb la Unió Europea.', rights:'Tots els drets reservats.' },
+  zh: { house:'家族机构', ordines:'Ordines', international:'国际导向', governance:'治理', founder:'创始人', contact:'联系', journal:'Scientia · Journal', privacy:'隐私', cookies:'Cookie', terms:'条款', disclaimer:'医疗声明', orientation:'欧洲导向', euNote:'欧洲旗帜不代表欧盟批准、赞助或官方隶属。', rights:'保留所有权利。' },
+  pl: { house:'Dom', ordines:'Ordines', international:'Orientacja międzynarodowa', governance:'Ład', founder:'Założyciel', contact:'Kontakt', journal:'Scientia · Journal', privacy:'Prywatność', cookies:'Cookies', terms:'Warunki', disclaimer:'Nota medyczna', orientation:'Orientacja europejska', euNote:'Flaga europejska nie oznacza zatwierdzenia, sponsorowania ani oficjalnego powiązania z Unią Europejską.', rights:'Wszelkie prawa zastrzeżone.' },
+  ru: { house:'Дом', ordines:'Ordines', international:'Международная ориентация', governance:'Управление', founder:'Основатель', contact:'Контакты', journal:'Scientia · Journal', privacy:'Конфиденциальность', cookies:'Cookies', terms:'Условия', disclaimer:'Медицинское уведомление', orientation:'Европейская ориентация', euNote:'Флаг Европы не означает одобрения, спонсорства или официальной связи с Европейским союзом.', rights:'Все права защищены.' },
+  ja: { house:'カーサ', ordines:'Ordines', international:'国際志向', governance:'ガバナンス', founder:'創設者', contact:'お問い合わせ', journal:'Scientia · Journal', privacy:'プライバシー', cookies:'Cookie', terms:'利用規約', disclaimer:'医療免責事項', orientation:'欧州志向', euNote:'欧州旗はEUの承認、後援、公式提携を意味しません。', rights:'無断転載を禁じます。' },
 }
 
 export function SiteFooter() {
@@ -47,7 +30,7 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-white/10 bg-[#050e17] text-[#f7f1e6]">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
-        <div className="grid gap-12 lg:grid-cols-[1.25fr_.75fr_.8fr_1fr]">
+        <div className="grid gap-12 lg:grid-cols-[1.15fr_.7fr_1.15fr_.9fr]">
           <div>
             <Link href="/" className="flex items-center gap-3">
               <Monogram className="size-11 rounded-full border border-[#c9a85f]/35 bg-white/5 text-[#c9a85f]" />
@@ -56,18 +39,10 @@ export function SiteFooter() {
                 <span className="mt-1 block text-[0.58rem] uppercase tracking-[0.25em] text-white/38">{site.legalName}</span>
               </span>
             </Link>
-            <p className="mt-6 max-w-sm text-sm leading-7 text-white/50">
-              Conocimiento · Honor · Disciplina · Legado. Una Casa italiana que distingue con precisión entre operación actual y desarrollo futuro.
-            </p>
-            <div className="mt-7 grid max-w-md gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-4">
-                <p className="text-[0.58rem] uppercase tracking-[0.18em] text-[#c9a85f]">{t.heritage}</p>
-                <p className="mt-2 text-sm">🇮🇹 Roma · 1893</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-4">
-                <p className="text-[0.58rem] uppercase tracking-[0.18em] text-[#c9a85f]">{t.opening}</p>
-                <p className="mt-2 text-sm">🇨🇷 Costa Rica · 2024</p>
-              </div>
+            <p className="mt-6 max-w-sm text-sm leading-7 text-white/50">Conocimiento · Honor · Disciplina · Legado. Una Casa italiana de instituciones coordinadas con vocación internacional.</p>
+            <div className="mt-7 rounded-2xl border border-[#c9a85f]/18 bg-[#c9a85f]/5 p-5">
+              <p className="text-[0.58rem] uppercase tracking-[0.18em] text-[#c9a85f]">Ordinamento</p>
+              <p className="mt-3 text-sm leading-6 text-white/54">Seis Ordines activas bajo gobierno, archivo, tecnología y control común.</p>
             </div>
           </div>
 
@@ -75,19 +50,21 @@ export function SiteFooter() {
             <h2 className="text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-white/38">{t.house}</h2>
             <ul className="mt-5 space-y-3 text-sm text-white/64">
               <li><Link href="/casa" className="transition hover:text-[#c9a85f]">Casa Bernocchi</Link></li>
-              <li><Link href="/founder" className="transition hover:text-[#c9a85f]">{t.founder}</Link></li>
               <li><Link href="/governance" className="transition hover:text-[#c9a85f]">{t.governance}</Link></li>
+              <li><Link href="/founder" className="transition hover:text-[#c9a85f]">{t.founder}</Link></li>
+              <li><Link href="/journal" className="transition hover:text-[#c9a85f]">{t.journal}</Link></li>
               <li><Link href="/contact" className="transition hover:text-[#c9a85f]">{t.contact}</Link></li>
             </ul>
           </div>
 
           <div>
-            <h2 className="text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-white/38">{t.services}</h2>
-            <ul className="mt-5 space-y-3 text-sm text-white/64">
-              <li><Link href="/health" className="transition hover:text-[#c9a85f]">{t.health}</Link></li>
-              <li><Link href="/institutions" className="transition hover:text-[#c9a85f]">{t.institutions}</Link></li>
-              <li><a href={`mailto:${site.email}`} className="inline-flex items-center gap-2 text-[#d8bd7a] hover:text-[#ead49f]"><Mail className="size-4" />{site.email}</a></li>
-              <li><a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 transition hover:text-[#c9a85f]"><MessageCircle className="size-4" />{site.phoneDisplay}</a></li>
+            <h2 className="text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-white/38">{t.ordines}</h2>
+            <ul className="mt-5 grid gap-x-5 gap-y-3 text-sm text-white/64 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              {ordines.map((ordo) => (
+                <li key={ordo.slug}><Link href={`/ordines/${ordo.slug}`} className="transition hover:text-[#c9a85f]">{ordo.order}</Link></li>
+              ))}
+              <li className="sm:col-span-2 lg:col-span-1 xl:col-span-2"><a href={`mailto:${site.email}`} className="inline-flex items-center gap-2 text-[#d8bd7a] hover:text-[#ead49f]"><Mail className="size-4" />{site.email}</a></li>
+              <li className="sm:col-span-2 lg:col-span-1 xl:col-span-2"><a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 transition hover:text-[#c9a85f]"><MessageCircle className="size-4" />{site.phoneDisplay}</a></li>
             </ul>
           </div>
 
