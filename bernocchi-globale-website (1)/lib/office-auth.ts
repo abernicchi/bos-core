@@ -74,6 +74,19 @@ export async function setOfficePassword(accessToken: string, password: string) {
   )
 }
 
+export async function adminSetOfficePassword(userId: string, password: string) {
+  return authRequest<OfficeAuthUser>(
+    `admin/users/${encodeURIComponent(userId)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({
+        password,
+        email_confirm: true,
+      }),
+    },
+  )
+}
+
 export async function inviteAntonella() {
   const redirectTo = `${(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bernocchiglobale.it').replace(/\/$/, '')}/office/activate`
   return authRequest<OfficeAuthUser>(

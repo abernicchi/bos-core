@@ -3,23 +3,21 @@
 import { FormEvent, useEffect, useState } from 'react'
 
 export default function OfficeActivatePage() {
-  const [accessToken, setAccessToken] = useState('')
-  const [refreshToken, setRefreshToken] = useState('')
+  const [token, setToken] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const values = new URLSearchParams(window.location.hash.replace(/^#/, ''))
-    setAccessToken(values.get('access_token') ?? '')
-    setRefreshToken(values.get('refresh_token') ?? '')
+    const values = new URLSearchParams(window.location.search)
+    setToken(values.get('token') ?? '')
   }, [])
 
   async function submit(event: FormEvent) {
     event.preventDefault()
-    if (!accessToken) {
-      setMessage('El enlace de activación no contiene una sesión válida.')
+    if (!token) {
+      setMessage('El enlace de activación no contiene un token válido.')
       return
     }
     if (password.length < 12) {
@@ -36,7 +34,7 @@ export default function OfficeActivatePage() {
       const response = await fetch('/api/office/activate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken, refreshToken, password }),
+        body: JSON.stringify({ token, password }),
       })
       const data = (await response.json()) as { ok?: boolean; error?: string }
       if (!response.ok || !data.ok) throw new Error(data.error ?? 'No fue posible activar la cuenta.')
