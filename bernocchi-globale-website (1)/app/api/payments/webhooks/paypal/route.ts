@@ -13,10 +13,8 @@ import {
   refundPayment,
   registerWebhookEvent,
 } from '@/lib/payments/orders'
-import {
-  sendPaymentConfirmation,
-  sendRefundConfirmation,
-} from '@/lib/payments/notifications'
+import { finalizePaidReservation } from '@/lib/payments/finalize'
+import { sendRefundConfirmation } from '@/lib/payments/notifications'
 
 function amountMinor(value: string | undefined) {
   const amount = Math.round(Number(value) * 100)
@@ -65,15 +63,11 @@ export async function POST(request: Request) {
         amountMinor: amount,
         currency,
       })
-      const contact = await getBookingContact(order.booking_reservation_id)
-      if (contact) {
-        await sendPaymentConfirmation({
-          order,
-          contact,
-          provider: 'paypal',
-          transactionId: event.resource.id,
-        })
-      }
+      await finalizePaidReservation({
+        order,
+        provider: 'paypal',
+        transactionId: event.resource.id,
+      })
       handled = true
     }
 
