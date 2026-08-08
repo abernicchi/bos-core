@@ -3,6 +3,13 @@ import { sendEmail, SEGRETERIA_RECIPIENT } from '@/lib/email'
 import { consultationTypes } from '@/lib/content'
 import { normalizeLocale } from '@/lib/i18n'
 import {
+  assertCalendarAvailable,
+  CalendarConflictError,
+  createPendingCalendarEvent,
+  deleteCalendarEvent,
+  isGoogleCalendarConfigured,
+} from '@/lib/google-calendar'
+import {
   createPaymentOrderForReservation,
   expireStaleCheckoutHolds,
   paymentIsAvailable,
@@ -31,6 +38,35 @@ function reservationTimes(date: string, time: string, duration: number) {
   return { startAt: startAt.toISOString(), endAt: endAt.toISOString() }
 }
 
+function supabaseHeaders() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!key) return null
+  const headers: Record<string, string> = {
+    apikey: key,
+    'Content-Type': 'application/json',
+    Prefer: 'return=minimal',
+  }
+  if (key.split('.').length === 3) headers.Authorization = `Bearer ${key}`
+  return headers
+}
+
+async function patchReservation(reservationId: string, values: Record<string, unknown>) {
+  const url = process.env.SUPABASE_URL?.replace(/\/$/, '')
+  const headers = supabaseHeaders()
+  if (!url || !headers) return false
+  try {
+    const response = await fetch(`${url}/rest/v1/booking_reservations?id=eq.${encodeURIComponent(reservationId)}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(values),
+      cache: 'no-store',
+    })
+    return response.ok
+  } catch {
+    return false
+  }
+}
+
 async function persistReservation(data: {
   consultationId: string
   consultation: string
@@ -48,7 +84,8 @@ async function persistReservation(data: {
   if (!url || !key) return { status: 'skipped' as const }
 
   const times = reservationTimes(data.date, data.time, durationMinutes(data.consultationId))
-  if (!times) return { status: 'error' as const, detail: 'Invalid reservation time.' }
+  if (!times) return { status: 'error' as const, detail: 'Invalid reservation time.', responseStatus: 422 }
+  const holdExpiresAt = new Date(Date.now() + 30 * 60_000).toISOString()
 
   const headers: Record<string, string> = {
     apikey: key,
@@ -77,7 +114,7 @@ async function persistReservation(data: {
         status: 'pending_deposit',
         payment_method: 'pending',
         payment_status: 'pending',
-        hold_expires_at: new Date(Date.now() + 30 * 60_000).toISOString(),
+        hold_expires_at: holdExpiresAt,
       }),
       cache: 'no-store',
     })
@@ -85,7 +122,14 @@ async function persistReservation(data: {
     if (!response.ok) return { status: 'error' as const, detail: JSON.stringify(result), responseStatus: response.status }
     const reservationId = Array.isArray(result) ? result[0]?.id : undefined
     const referenceCode = Array.isArray(result) ? result[0]?.reference_code : undefined
-    return { status: 'saved' as const, reservationId, referenceCode }
+    return {
+      status: 'saved' as const,
+      reservationId,
+      referenceCode,
+      startAt: times.startAt,
+      endAt: times.endAt,
+      holdExpiresAt,
+    }
   } catch (error) {
     return { status: 'error' as const, detail: String(error), responseStatus: 0 }
   }
@@ -131,6 +175,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Validation failed.', fields: errors }, { status: 422 })
   }
 
+  const requestedTimes = reservationTimes(date, time, durationMinutes(consultationId))
+  if (!requestedTimes) {
+    return NextResponse.json({ error: 'Invalid reservation time.' }, { status: 422 })
+  }
+
+  if (isGoogleCalendarConfigured()) {
+    try {
+      await assertCalendarAvailable(requestedTimes.startAt, requestedTimes.endAt)
+    } catch (error) {
+      if (error instanceof CalendarConflictError) {
+        return NextResponse.json({ error: 'The selected time is no longer available.' }, { status: 409 })
+      }
+      console.error('[Casa Bernocchi] Google Calendar availability check failed:', error)
+      return NextResponse.json({ error: 'Calendar availability could not be verified.' }, { status: 503 })
+    }
+  }
+
   const databaseResult = await persistReservation({ consultationId, consultation, mode, language, fullName, email, whatsapp, country, date, time })
   if (databaseResult.status === 'error') {
     console.error('[Casa Bernocchi] Supabase reservation persistence failed:', databaseResult.detail)
@@ -143,6 +204,42 @@ export async function POST(request: Request) {
       },
       { status: conflict ? 409 : 502 },
     )
+  }
+
+  if (
+    databaseResult.status === 'saved' &&
+    databaseResult.reservationId &&
+    databaseResult.startAt &&
+    databaseResult.endAt &&
+    databaseResult.holdExpiresAt &&
+    isGoogleCalendarConfigured()
+  ) {
+    try {
+      const googleEventId = await createPendingCalendarEvent({
+        reservationId: databaseResult.reservationId,
+        referenceCode: databaseResult.referenceCode,
+        consultation,
+        consultationId,
+        mode,
+        language,
+        patientName: fullName,
+        patientEmail: email,
+        patientWhatsapp: whatsapp,
+        startAt: databaseResult.startAt,
+        endAt: databaseResult.endAt,
+        holdExpiresAt: databaseResult.holdExpiresAt,
+      })
+      const linked = await patchReservation(databaseResult.reservationId, { google_event_id: googleEventId })
+      if (!linked) {
+        await deleteCalendarEvent(googleEventId).catch(() => undefined)
+        await patchReservation(databaseResult.reservationId, { status: 'failed' })
+        return NextResponse.json({ error: 'The calendar reservation could not be linked.' }, { status: 502 })
+      }
+    } catch (error) {
+      console.error('[Casa Bernocchi] Google Calendar event creation failed:', error)
+      await patchReservation(databaseResult.reservationId, { status: 'failed' })
+      return NextResponse.json({ error: 'The calendar reservation could not be created.' }, { status: 503 })
+    }
   }
 
   let paymentOrder: Awaited<ReturnType<typeof createPaymentOrderForReservation>>
