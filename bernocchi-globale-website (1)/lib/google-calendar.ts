@@ -1,5 +1,18 @@
 import { createSign } from 'node:crypto'
 
+export const CASA_BERNOCCHI_CALENDAR_SCOPES = {
+  segreteria_generale: 'Segreteria Generale',
+  office_of_founder: 'Ufficio del Fondatore',
+  ordo_medicinae: 'Ordo Medicinae · Bernocchi Health',
+  ordo_iuris: 'Ordo Iuris',
+  ordo_scientia: 'Ordo Scientia',
+  ordo_capitalis: 'Ordo Capitalis',
+  ordo_innovatio: 'Ordo Innovatio',
+  ordo_humanitatis: 'Ordo Humanitatis',
+} as const
+
+export type CalendarScope = keyof typeof CASA_BERNOCCHI_CALENDAR_SCOPES
+
 export type CalendarEvent = {
   id?: string
   summary?: string
@@ -14,23 +27,43 @@ export class CalendarUnavailableError extends Error {}
 export class CalendarConflictError extends Error {}
 
 export function normalizePrivateKey(value: string) {
-  return value.replace(/^['"]|['"]$/g, '').replaceAll('\\n', '\n')
+  return value.replace(/^['\"]|['\"]$/g, '').replaceAll('\\n', '\n')
 }
 
-export function isGoogleCalendarConfigured() {
+function calendarMap(): Partial<Record<CalendarScope, string>> {
+  const raw = process.env.GOOGLE_CALENDAR_MAP_JSON
+  if (!raw) return {}
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+    const result: Partial<Record<CalendarScope, string>> = {}
+    for (const scope of Object.keys(CASA_BERNOCCHI_CALENDAR_SCOPES) as CalendarScope[]) {
+      const value = parsed[scope]
+      if (typeof value === 'string' && value.trim()) result[scope] = value.trim()
+    }
+    return result
+  } catch {
+    throw new CalendarUnavailableError('GOOGLE_CALENDAR_MAP_JSON is invalid JSON.')
+  }
+}
+
+export function resolveCalendarId(scope: CalendarScope = 'ordo_medicinae') {
+  return calendarMap()[scope] || process.env.GOOGLE_CALENDAR_ID || ''
+}
+
+export function isGoogleCalendarConfigured(scope: CalendarScope = 'ordo_medicinae') {
   return Boolean(
-    process.env.GOOGLE_CALENDAR_ID &&
+    resolveCalendarId(scope) &&
     process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
     process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
   )
 }
 
-function config() {
-  const calendarId = process.env.GOOGLE_CALENDAR_ID
+function config(scope: CalendarScope = 'ordo_medicinae') {
+  const calendarId = resolveCalendarId(scope)
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
   const key = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
   if (!calendarId || !email || !key) {
-    throw new CalendarUnavailableError('Google Calendar is not configured.')
+    throw new CalendarUnavailableError(`Google Calendar is not configured for ${scope}.`)
   }
   return { calendarId, email, key: normalizePrivateKey(key) }
 }
@@ -41,7 +74,10 @@ let cachedToken: { value: string; expiresAt: number } | undefined
 async function accessToken() {
   if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.value
 
-  const { email, key } = config()
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
+  const rawKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+  if (!email || !rawKey) throw new CalendarUnavailableError('Google Calendar service account is not configured.')
+  const key = normalizePrivateKey(rawKey)
   const now = Math.floor(Date.now() / 1000)
   const unsigned = `${base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))}.${base64url(JSON.stringify({
     iss: email,
@@ -75,8 +111,8 @@ async function accessToken() {
   return result.access_token
 }
 
-async function calendarApi(path: string, init?: RequestInit) {
-  const { calendarId } = config()
+async function calendarApi(path: string, init?: RequestInit, scope: CalendarScope = 'ordo_medicinae') {
+  const { calendarId } = config(scope)
   const token = await accessToken()
   const response = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}${path}`,
@@ -91,7 +127,7 @@ async function calendarApi(path: string, init?: RequestInit) {
     },
   )
   if (!response.ok) {
-    throw new CalendarUnavailableError(`Google Calendar request failed (${response.status}).`)
+    throw new CalendarUnavailableError(`Google Calendar request failed (${response.status}) for ${scope}.`)
   }
   return response.status === 204 ? null : response.json()
 }
@@ -107,7 +143,7 @@ function isExpiredPendingHold(event: CalendarEvent, now = new Date()) {
     new Date(properties!.holdExpiresAt) <= now
 }
 
-export async function listEvents(startAt: string, endAt: string): Promise<CalendarEvent[]> {
+export async function listEvents(startAt: string, endAt: string, scope: CalendarScope = 'ordo_medicinae'): Promise<CalendarEvent[]> {
   const query = new URLSearchParams({
     timeMin: startAt,
     timeMax: endAt,
@@ -115,18 +151,22 @@ export async function listEvents(startAt: string, endAt: string): Promise<Calend
     showDeleted: 'false',
     maxResults: '250',
   })
-  const result = await calendarApi(`/events?${query}`) as { items?: CalendarEvent[] }
+  const result = await calendarApi(`/events?${query}`, undefined, scope) as { items?: CalendarEvent[] }
   return result.items ?? []
 }
 
-export async function assertCalendarAvailable(startAt: string, endAt: string) {
+export async function deleteCalendarEvent(eventId: string, scope: CalendarScope = 'ordo_medicinae') {
+  await calendarApi(`/events/${encodeURIComponent(eventId)}`, { method: 'DELETE' }, scope)
+}
+
+export async function assertCalendarAvailable(startAt: string, endAt: string, scope: CalendarScope = 'ordo_medicinae') {
   const requestedStart = new Date(startAt)
   const requestedEnd = new Date(endAt)
-  const events = await listEvents(startAt, endAt)
+  const events = await listEvents(startAt, endAt, scope)
   const now = new Date()
 
   const expiredHolds = events.filter((event) => event.id && isExpiredPendingHold(event, now))
-  await Promise.allSettled(expiredHolds.map((event) => deleteCalendarEvent(event.id!)))
+  await Promise.allSettled(expiredHolds.map((event) => deleteCalendarEvent(event.id!, scope)))
 
   const conflict = events.some((event) => {
     if (isExpiredPendingHold(event, now)) return false
@@ -140,7 +180,41 @@ export async function assertCalendarAvailable(startAt: string, endAt: string) {
     )
   })
 
-  if (conflict) throw new CalendarConflictError('The selected interval is occupied in Google Calendar.')
+  if (conflict) throw new CalendarConflictError(`The selected interval is occupied in ${scope}.`)
+}
+
+export async function createCasaBernocchiEvent(input: {
+  calendarScope: CalendarScope
+  summary: string
+  description?: string
+  startAt: string
+  endAt: string
+  visibility?: 'private' | 'default'
+  transparency?: 'opaque' | 'transparent'
+  extendedProperties?: Record<string, string>
+}) {
+  const resource = {
+    summary: input.summary,
+    description: input.description,
+    start: { dateTime: input.startAt, timeZone: 'America/Costa_Rica' },
+    end: { dateTime: input.endAt, timeZone: 'America/Costa_Rica' },
+    visibility: input.visibility ?? 'private',
+    transparency: input.transparency ?? 'opaque',
+    extendedProperties: {
+      private: {
+        casaBernocchiScope: input.calendarScope,
+        ...input.extendedProperties,
+      },
+    },
+  }
+
+  const created = await calendarApi('/events', {
+    method: 'POST',
+    body: JSON.stringify(resource),
+  }, input.calendarScope) as CalendarEvent
+
+  if (!created.id) throw new CalendarUnavailableError('Google Calendar did not return an event id.')
+  return created.id
 }
 
 export async function createPendingCalendarEvent(input: {
@@ -156,46 +230,35 @@ export async function createPendingCalendarEvent(input: {
   startAt: string
   endAt: string
   holdExpiresAt: string
+  calendarScope?: CalendarScope
 }) {
-  const resource = {
-    summary: `PENDIENTE DE CONFIRMACIÓN — Bernocchi Health — ${input.consultation}`,
+  const calendarScope = input.calendarScope ?? 'ordo_medicinae'
+  const scopeLabel = CASA_BERNOCCHI_CALENDAR_SCOPES[calendarScope]
+  return createCasaBernocchiEvent({
+    calendarScope,
+    summary: `PENDIENTE DE CONFIRMACIÓN — ${scopeLabel} — ${input.consultation}`,
     description: [
       `Referencia: ${input.referenceCode ?? 'pendiente'}`,
       `Paciente: ${input.patientName}`,
       `Correo: ${input.patientEmail}`,
       `WhatsApp: ${input.patientWhatsapp}`,
       `Modalidad: ${input.mode === 'in-person' ? 'presencial' : 'online'}`,
+      `Unidad: ${scopeLabel}`,
       'Estado: pago y confirmación pendientes',
       'Origen: bernocchiglobale.it',
       '',
       'No se recopiló información clínica mediante el sitio web.',
     ].join('\n'),
-    start: { dateTime: input.startAt, timeZone: 'America/Costa_Rica' },
-    end: { dateTime: input.endAt, timeZone: 'America/Costa_Rica' },
-    visibility: 'private',
-    transparency: 'opaque',
+    startAt: input.startAt,
+    endAt: input.endAt,
     extendedProperties: {
-      private: {
-        bookingId: input.reservationId,
-        bookingStatus: 'pending_deposit',
-        holdExpiresAt: input.holdExpiresAt,
-        referenceCode: input.referenceCode ?? '',
-        consultationId: input.consultationId,
-        mode: input.mode,
-        language: input.language,
-      },
+      bookingId: input.reservationId,
+      bookingStatus: 'pending_deposit',
+      holdExpiresAt: input.holdExpiresAt,
+      referenceCode: input.referenceCode ?? '',
+      consultationId: input.consultationId,
+      mode: input.mode,
+      language: input.language,
     },
-  }
-
-  const created = await calendarApi('/events', {
-    method: 'POST',
-    body: JSON.stringify(resource),
-  }) as CalendarEvent
-
-  if (!created.id) throw new CalendarUnavailableError('Google Calendar did not return an event id.')
-  return created.id
-}
-
-export async function deleteCalendarEvent(eventId: string) {
-  await calendarApi(`/events/${encodeURIComponent(eventId)}`, { method: 'DELETE' })
+  })
 }
